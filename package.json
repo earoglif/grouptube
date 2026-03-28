@@ -1,0 +1,17 @@
+{
+  "name": "grouptube",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.2.1",
+    "@types/chrome": "^0.0.318",
+    "typescript": "~5.7.3",
+    "vite": "^6.2.0"
+  }
+}
