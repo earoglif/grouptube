@@ -1,5 +1,7 @@
+import { getCurrentLanguage } from './utils/getCurrentLanguage'
+
 function main(): void {
-  console.log('onMessage!!!')
+  console.log('currentLanguage', getCurrentLanguage())
 }
 
 main()

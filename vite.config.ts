@@ -4,4 +4,17 @@ import manifest from './manifest.config'
 
 export default defineConfig({
   plugins: [crx({ manifest })],
+  server: {
+    host: '127.0.0.1',
+    port: 5173,
+    strictPort: true,
+    cors: {
+      origin: [/chrome-extension:\/\//],
+    },
+    hmr: {
+      host: '127.0.0.1',
+      port: 5173,
+      protocol: 'ws',
+    },
+  },
 })
