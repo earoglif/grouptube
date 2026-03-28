@@ -1,7 +1,5 @@
 function main(): void {
-  chrome.runtime.onMessage.addListener(() => {
-    // reserved for popup/background messaging
-  })
+  console.log('onMessage!!!')
 }
 
 main()
