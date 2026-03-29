@@ -11,6 +11,9 @@ export default defineManifest({
     48: 'icons/64-icon.png',
     128: 'icons/128-icon.png',
   },
+  background: {
+    service_worker: 'src/background/index.ts',
+  },
   content_scripts: [
     {
       matches: ['https://www.youtube.com/*'],

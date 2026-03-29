@@ -12,9 +12,10 @@
   "devDependencies": {
     "@crxjs/vite-plugin": "^2.2.1",
     "@tailwindcss/vite": "^4.2.2",
-    "@types/chrome": "^0.0.318",
+    "@types/firefox-webext-browser": "^143.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/webextension-polyfill": "^0.12.5",
     "@vitejs/plugin-react": "^5.2.0",
     "shadcn": "^4.1.1",
     "tailwindcss": "^4.2.2",
@@ -30,6 +31,7 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-i18next": "^17.0.1",
-    "tailwind-merge": "^3.5.0"
+    "tailwind-merge": "^3.5.0",
+    "webextension-polyfill": "^0.12.0"
   }
 }
