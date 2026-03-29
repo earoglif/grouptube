@@ -16,7 +16,7 @@ export default defineManifest({
       matches: ['https://www.youtube.com/*'],
       run_at: 'document_idle',
       all_frames: false,
-      js: ['src/content.ts'],
+      js: ['src/content/index.ts'],
     },
   ],
   host_permissions: ['https://www.youtube.com/*'],
