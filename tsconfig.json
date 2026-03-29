@@ -4,6 +4,7 @@
     "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "jsx": "react-jsx",
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
@@ -11,5 +12,5 @@
     "resolveJsonModule": true,
     "types": ["chrome", "vite/client"]
   },
-  "include": ["src/**/*.ts", "manifest.config.ts", "vite.config.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "manifest.config.ts", "vite.config.ts"]
 }

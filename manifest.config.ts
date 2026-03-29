@@ -20,5 +20,7 @@ export default defineManifest({
     },
   ],
   host_permissions: ['https://www.youtube.com/*'],
-  "action": {}
+  action: {
+    default_popup: 'src/popup/index.html',
+  },
 })

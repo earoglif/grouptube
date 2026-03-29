@@ -1,7 +1,7 @@
-import { getCurrentLanguage } from '../utils/getCurrentLanguage'
+import { getCurrentLanguage } from '../utils/getCurrentLanguage';
 
-function main(): void {
-  console.log('currentLanguage', getCurrentLanguage())
+function init(): void {
+  console.log('currentLanguage', getCurrentLanguage());
 }
 
-main()
+init();
