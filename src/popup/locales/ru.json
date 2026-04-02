@@ -1,4 +1,5 @@
 {
   "greeting": "Привет!",
-  "description": "Добро пожаловать в popup GroupTube"
+  "description": "Добро пожаловать в popup GroupTube",
+  "groups": "Группы"
 }

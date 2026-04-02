@@ -1,3 +1,5 @@
+import { t } from "./i18n";
+
 const GROUPS_SECTION_ID = "grouptube-groups-section";
 
 function createGroupsSection(): HTMLElement {
@@ -14,7 +16,7 @@ function createGroupsSection(): HTMLElement {
         font-weight: 500;
         color: var(--yt-spec-text-primary);
         font-family: 'Roboto', 'Arial', sans-serif;
-      ">Группы</h3>
+      ">${t("groups")}</h3>
       <div id="grouptube-groups-list" style="padding: 0 12px;">
       </div>
     </div>
