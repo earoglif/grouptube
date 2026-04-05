@@ -1,5 +1,6 @@
 {
   "greeting": "Привет!",
   "description": "Добро пожаловать в popup GroupTube",
-  "groups": "Группы"
+  "groups": "Группы",
+  "manageGroups": "Управление группами"
 }

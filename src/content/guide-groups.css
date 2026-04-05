@@ -1,0 +1,59 @@
+:host {
+  display: block;
+  width: 100%;
+  font-family: "Roboto", "Arial", sans-serif;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+.guide-groups-container {
+  padding: 12px;
+}
+
+.guide-groups-section {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.guide-groups-item {
+  appearance: none;
+  width: calc(100% - 12px);
+  height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24px;
+  text-align: left;
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  box-sizing: border-box;
+  font: inherit;
+  transition: background-color 0.14s ease-in-out;
+}
+
+.guide-groups-item:hover,
+.guide-groups-item:focus-visible {
+  background: var(--yt-spec-additive-background);
+  outline: none;
+}
+
+.guide-groups-icon {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 24px;
+}
+
+.guide-groups-label {
+  font-size: 1.6rem;
+  line-height: 2.2rem;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
