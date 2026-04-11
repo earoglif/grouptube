@@ -1,6 +1,7 @@
 import { storage } from "webextension-polyfill";
 import { getCurrentLanguage } from "../utils/getCurrentLanguage";
 import { initGuideGroups } from "./guide-groups";
+import { ensurePageBridgeInjected } from "./services/page-bridge";
 
 const POPUP_LANGUAGE_STORAGE_KEY = "popupLanguage";
 
@@ -14,6 +15,7 @@ async function persistPageLanguage(): Promise<void> {
 }
 
 function init(): void {
+  ensurePageBridgeInjected();
   void persistPageLanguage();
   initGuideGroups();
 }

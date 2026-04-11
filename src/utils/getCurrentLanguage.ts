@@ -5,8 +5,6 @@ export function getCurrentLanguage(): string {
   ).ytcfg;
   const ytLanguage = ytcfg?.get?.("HL");
 
-  console.log('ytLanguage:', ytLanguage);
-
   if (typeof ytLanguage === "string" && ytLanguage.trim().length > 0) {
     return ytLanguage;
   }

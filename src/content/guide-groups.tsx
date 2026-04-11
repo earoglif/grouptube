@@ -29,6 +29,27 @@ function GuideGroupsSection() {
       <GroupsModal
         isOpen={isModalOpen}
         title={t("manageGroups")}
+        labels={{
+          closeLabel: t("close"),
+          newGroupLabel: t("newGroup"),
+          refreshLabel: t("refresh"),
+          loadingLabel: t("loading"),
+          noGroupsLabel: t("noGroups"),
+          ungroupedTitle: t("ungroupedSubscriptions"),
+          ungroupedEmptyLabel: t("ungroupedEmpty"),
+          groupEmptyLabel: t("groupEmpty"),
+          groupEditLabel: t("edit"),
+          groupDeleteLabel: t("delete"),
+          groupExpandLabel: t("expandGroup"),
+          groupCollapseLabel: t("collapseGroup"),
+          groupDragHandleLabel: t("dragGroup"),
+          subscriptionDragHandleLabel: t("dragSubscription"),
+          createNamePlaceholder: t("groupNamePlaceholder"),
+          createLabel: t("createGroupAction"),
+          saveLabel: t("save"),
+          cancelLabel: t("cancel"),
+          deleteGroupConfirm: t("deleteGroupConfirm"),
+        }}
         onClose={() => setIsModalOpen(false)}
       />
     </div>
