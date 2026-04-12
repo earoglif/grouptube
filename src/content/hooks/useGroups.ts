@@ -20,11 +20,23 @@ type UpdateGroupInput = {
   color?: string;
 };
 
+function reorderByIds(currentGroups: Group[], orderedGroupIds: GroupId[]): Group[] {
+  const groupsById = new Map(currentGroups.map((group) => [group.id, group]));
+  const orderedGroups = orderedGroupIds
+    .map((groupId) => groupsById.get(groupId))
+    .filter((group): group is Group => group !== undefined);
+  const orderedIdSet = new Set(orderedGroupIds);
+  const remainingGroups = currentGroups.filter((group) => !orderedIdSet.has(group.id));
+
+  return [...orderedGroups, ...remainingGroups];
+}
+
 export function useGroups() {
   const [userId, setUserId] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const latestLoadIdRef = useRef(0);
+  const latestReorderIdRef = useRef(0);
 
   const loadForUser = useCallback(async (nextUserId: string | null) => {
     const loadId = ++latestLoadIdRef.current;
@@ -90,7 +102,12 @@ export function useGroups() {
 
   const reorderGroupsAction = useCallback(
     async (groupIds: GroupId[]) => {
+      const reorderId = ++latestReorderIdRef.current;
+      setGroups((currentGroups) => reorderByIds(currentGroups, groupIds));
+
       const nextGroups = await reorderGroups(userId, groupIds);
+      if (reorderId !== latestReorderIdRef.current) return nextGroups;
+
       setGroups(nextGroups);
       return nextGroups;
     },
