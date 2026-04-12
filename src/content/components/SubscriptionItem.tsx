@@ -28,6 +28,19 @@ export function SubscriptionItem({ subscription, groupId, dragHandleLabel }: Sub
       <button type="button" className="grouptube-drag-handle" aria-label={dragHandleLabel} {...attributes} {...listeners}>
         ≡
       </button>
+      <span className="grouptube-subscription-avatar-wrap" aria-hidden="true">
+        {subscription.thumbnailUrl ? (
+          <img
+            className="grouptube-subscription-avatar"
+            src={subscription.thumbnailUrl}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <span className="grouptube-subscription-avatar-fallback" />
+        )}
+      </span>
       <span className="grouptube-subscription-name">{subscription.name}</span>
     </div>
   );

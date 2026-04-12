@@ -1,4 +1,4 @@
-import { DndContext, PointerSensor, closestCenter, type DragEndEvent, useSensor, useSensors } from "@dnd-kit/core";
+import { DndContext, PointerSensor, closestCenter, type DragEndEvent, type Modifier, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
@@ -33,6 +33,11 @@ export type ModalBodyLabels = {
 type ModalBodyProps = {
   labels: ModalBodyLabels;
 };
+
+const restrictToVerticalAxis: Modifier = ({ transform }) => ({
+  ...transform,
+  x: 0,
+});
 
 function resolveDropTargetGroupId(
   overId: unknown,
@@ -156,7 +161,12 @@ export function ModalBody({ labels }: ModalBodyProps) {
 
       {isLoading ? <p className="grouptube-info-text">{labels.loadingLabel}</p> : null}
 
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        modifiers={[restrictToVerticalAxis]}
+        onDragEnd={handleDragEnd}
+      >
         {groups.length > 0 ? (
           <GroupList
             groups={groups}
