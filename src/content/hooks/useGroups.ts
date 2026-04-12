@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   assignChannelToGroup,
   createGroup,
@@ -7,7 +7,7 @@ import {
   reorderGroups,
   updateGroup,
 } from "../services/storage";
-import { requestUserId, subscribeToUserId } from "../services/user";
+import { getLastUserId, requestUserId, subscribeToUserId } from "../services/user";
 import type { ChannelId, Group, GroupId } from "../types";
 
 type CreateGroupInput = {
@@ -24,10 +24,13 @@ export function useGroups() {
   const [userId, setUserId] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const latestLoadIdRef = useRef(0);
 
   const loadForUser = useCallback(async (nextUserId: string | null) => {
+    const loadId = ++latestLoadIdRef.current;
     setIsLoading(true);
     const nextGroups = await loadGroups(nextUserId);
+    if (loadId !== latestLoadIdRef.current) return;
     setGroups(nextGroups);
     setIsLoading(false);
   }, []);
@@ -38,8 +41,10 @@ export function useGroups() {
       void loadForUser(nextUserId);
     }, false);
 
+    const cachedUserId = getLastUserId();
+    setUserId(cachedUserId);
+    void loadForUser(cachedUserId);
     requestUserId();
-    void loadForUser(null);
 
     return () => {
       unsubscribe();
