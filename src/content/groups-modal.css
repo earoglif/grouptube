@@ -183,6 +183,27 @@
   font-size: 13px;
 }
 
+.grouptube-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 2px 0;
+  color: var(--yt-spec-text-secondary, #606060);
+  font-size: 13px;
+}
+
+.grouptube-loading-icon {
+  width: 14px;
+  height: 14px;
+  animation: grouptube-loading-spin 0.8s linear infinite;
+}
+
+@keyframes grouptube-loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .grouptube-group-list {
   display: flex;
   flex-direction: column;

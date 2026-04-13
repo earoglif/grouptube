@@ -1,5 +1,6 @@
 import { DndContext, PointerSensor, closestCenter, type DragEndEvent, type Modifier, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
+import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
 import { useSubscriptions } from "../hooks/useSubscriptions";
@@ -232,7 +233,12 @@ export function ModalBody({ labels }: ModalBodyProps) {
         />
       ) : null}
 
-      {isLoading ? <p className="grouptube-info-text">{labels.loadingLabel}</p> : null}
+      {isLoading ? (
+        <div className="grouptube-loading" role="status" aria-live="polite">
+          <LoaderCircle className="grouptube-loading-icon" aria-hidden="true" />
+          <span>{labels.loadingLabel}</span>
+        </div>
+      ) : null}
 
       <DndContext
         sensors={sensors}
