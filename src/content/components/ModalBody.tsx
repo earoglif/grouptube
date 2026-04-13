@@ -1,8 +1,9 @@
 import { DndContext, PointerSensor, closestCenter, type DragEndEvent, type Modifier, useSensor, useSensors } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
 import { useSubscriptions } from "../hooks/useSubscriptions";
+import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
 import type { Subscription } from "../types";
 import { GroupForm } from "./GroupForm";
 import { GroupList } from "./GroupList";
@@ -12,6 +13,10 @@ import { UNGROUPED_DROP_ID, parseGroupId, parseSubscriptionChannelId } from "./d
 export type ModalBodyLabels = {
   newGroupLabel: string;
   refreshLabel: string;
+  sortLabel: string;
+  sortRelevanceLabel: string;
+  sortNameAscLabel: string;
+  sortNameDescLabel: string;
   loadingLabel: string;
   noGroupsLabel: string;
   ungroupedTitle: string;
@@ -39,6 +44,26 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({
   x: 0,
 });
 
+const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
+
+function isSubscriptionSortMode(value: string): value is SubscriptionSortMode {
+  return value === "relevance" || value === "nameAsc" || value === "nameDesc";
+}
+
+function sortSubscriptions(subscriptions: Subscription[], sortMode: SubscriptionSortMode): Subscription[] {
+  if (sortMode === "relevance") {
+    return subscriptions;
+  }
+
+  const sorted = [...subscriptions];
+  sorted.sort((left, right) =>
+    sortMode === "nameAsc"
+      ? NAME_COLLATOR.compare(left.name, right.name)
+      : NAME_COLLATOR.compare(right.name, left.name)
+  );
+  return sorted;
+}
+
 function resolveDropTargetGroupId(
   overId: unknown,
   overData: { kind?: string; groupId?: string | null } | undefined
@@ -56,8 +81,10 @@ function resolveDropTargetGroupId(
 
 export function ModalBody({ labels }: ModalBodyProps) {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
   const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const {
+    userId,
     groups,
     isLoading: isGroupsLoading,
     channelToGroupMap,
@@ -74,6 +101,31 @@ export function ModalBody({ labels }: ModalBodyProps) {
     })
   );
 
+  useEffect(() => {
+    let isCancelled = false;
+
+    void loadSubscriptionSort(userId)
+      .then((storedSortMode) => {
+        if (!isCancelled) {
+          setSortMode(storedSortMode);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setSortMode("relevance");
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [userId]);
+
+  const sortedSubscriptions = useMemo(
+    () => sortSubscriptions(subscriptions, sortMode),
+    [subscriptions, sortMode]
+  );
+
   const { subscriptionsByGroupId, ungroupedSubscriptions } = useMemo(() => {
     const grouped = new Map<string, Subscription[]>();
     for (const group of groups) {
@@ -81,7 +133,7 @@ export function ModalBody({ labels }: ModalBodyProps) {
     }
 
     const ungrouped: Subscription[] = [];
-    for (const subscription of subscriptions) {
+    for (const subscription of sortedSubscriptions) {
       const groupId = channelToGroupMap.get(subscription.channelId);
       if (groupId && grouped.has(groupId)) {
         grouped.get(groupId)?.push(subscription);
@@ -94,7 +146,12 @@ export function ModalBody({ labels }: ModalBodyProps) {
       subscriptionsByGroupId: grouped,
       ungroupedSubscriptions: ungrouped,
     };
-  }, [channelToGroupMap, groups, subscriptions]);
+  }, [channelToGroupMap, groups, sortedSubscriptions]);
+
+  const handleSortModeChange = (nextSortMode: SubscriptionSortMode) => {
+    setSortMode(nextSortMode);
+    void saveSubscriptionSort(userId, nextSortMode);
+  };
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -140,6 +197,22 @@ export function ModalBody({ labels }: ModalBodyProps) {
         <button type="button" className="grouptube-button" onClick={refresh}>
           {labels.refreshLabel}
         </button>
+        <label className="grouptube-toolbar-select-wrap">
+          <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
+          <select
+            className="grouptube-toolbar-select"
+            value={sortMode}
+            onChange={(event) => {
+              const nextSortMode = event.target.value;
+              if (!isSubscriptionSortMode(nextSortMode)) return;
+              handleSortModeChange(nextSortMode);
+            }}
+          >
+            <option value="relevance">{labels.sortRelevanceLabel}</option>
+            <option value="nameAsc">{labels.sortNameAscLabel}</option>
+            <option value="nameDesc">{labels.sortNameDescLabel}</option>
+          </select>
+        </label>
       </div>
 
       {isCreateGroupOpen ? (
