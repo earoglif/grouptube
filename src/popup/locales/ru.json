@@ -25,5 +25,12 @@
   "createGroupAction": "Создать группу",
   "save": "Сохранить",
   "cancel": "Отмена",
-  "deleteGroupConfirm": "Удалить эту группу?"
+  "deleteGroupConfirm": "Удалить эту группу?",
+  "exportGroups": "Экспорт",
+  "importGroups": "Импорт",
+  "importSuccess": "Импорт завершен: добавлено {{importedCount}}, пропущено {{skippedCount}}, удалено неактуальных подписок {{filteredChannelsCount}}.",
+  "importError": "Не удалось импортировать JSON-файл.",
+  "noGroupsToExport": "Нет групп для экспорта.",
+  "exportSuccess": "Экспортировано групп: {{count}}.",
+  "exportError": "Не удалось экспортировать JSON-файл."
 }

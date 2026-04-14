@@ -25,5 +25,12 @@
   "createGroupAction": "Create group",
   "save": "Save",
   "cancel": "Cancel",
-  "deleteGroupConfirm": "Delete this group?"
+  "deleteGroupConfirm": "Delete this group?",
+  "exportGroups": "Export",
+  "importGroups": "Import",
+  "importSuccess": "Import complete: added {{importedCount}}, skipped {{skippedCount}}, removed outdated subscriptions {{filteredChannelsCount}}.",
+  "importError": "Failed to import JSON file.",
+  "noGroupsToExport": "No groups to export.",
+  "exportSuccess": "Exported groups: {{count}}.",
+  "exportError": "Failed to export JSON file."
 }

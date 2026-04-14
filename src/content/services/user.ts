@@ -1,4 +1,7 @@
+import { storage } from "webextension-polyfill";
 import { PAGE_BRIDGE_EVENTS, ensurePageBridgeInjected } from "./page-bridge";
+
+const USER_ID_STORAGE_KEY = "grouptube_userId";
 
 type UserInfoDetail = {
   userId?: unknown;
@@ -18,6 +21,10 @@ function normalizeUserId(value: unknown): string | null {
 
 function emit(userId: string | null): void {
   lastUserId = userId;
+  void storage.local.set({ [USER_ID_STORAGE_KEY]: userId }).catch((error: unknown) => {
+    console.error("Failed to persist user ID", error);
+  });
+
   for (const listener of listeners) {
     listener(userId);
   }

@@ -1,9 +1,9 @@
 import { storage } from "webextension-polyfill";
 import type { ChannelId, Group, GroupId } from "../types";
+import { normalizeGroups, sanitizeColor, sanitizeText } from "../../shared/groups";
 
 const STORAGE_PREFIX = "grouptube_groups_";
 const ANONYMOUS_STORAGE_KEY = `${STORAGE_PREFIX}anonymous`;
-const DEFAULT_GROUP_COLOR = "#3ea6ff";
 
 type GroupCreateInput = {
   name: string;
@@ -17,56 +17,6 @@ type GroupUpdateInput = {
 
 function buildStorageKey(userId: string | null): string {
   return userId ? `${STORAGE_PREFIX}${userId}` : ANONYMOUS_STORAGE_KEY;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function sanitizeText(value: unknown): string {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function sanitizeColor(value: unknown): string {
-  const color = sanitizeText(value);
-  return color || DEFAULT_GROUP_COLOR;
-}
-
-function sanitizeChannelIds(value: unknown): ChannelId[] {
-  if (!Array.isArray(value)) return [];
-  const ids = value
-    .map((item) => sanitizeText(item))
-    .filter((item) => item.length > 0);
-  return [...new Set(ids)];
-}
-
-function normalizeGroup(value: unknown): Group | null {
-  if (!isRecord(value)) return null;
-
-  const id = sanitizeText(value.id);
-  const name = sanitizeText(value.name);
-
-  if (!id || !name) return null;
-
-  return {
-    id,
-    name,
-    color: sanitizeColor(value.color),
-    channelIds: sanitizeChannelIds(value.channelIds),
-  };
-}
-
-function normalizeGroups(value: unknown): Group[] {
-  if (!Array.isArray(value)) return [];
-
-  const groups = value
-    .map((item) => normalizeGroup(item))
-    .filter((item): item is Group => item !== null);
-
-  return groups.map((group) => ({
-    ...group,
-    channelIds: [...new Set(group.channelIds)],
-  }));
 }
 
 function createGroupId(): GroupId {
