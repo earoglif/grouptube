@@ -53,6 +53,14 @@ function GuideGroupsSection() {
           saveLabel: t("save"),
           cancelLabel: t("cancel"),
           deleteGroupConfirm: t("deleteGroupConfirm"),
+          openGroupingPromptLabel: t("openGroupingPrompt"),
+          promptDialogTitle: t("groupingPromptTitle"),
+          promptDialogDescription: t("groupingPromptDescription"),
+          promptDialogCloseLabel: t("close"),
+          promptDialogCopyLabel: t("copyPrompt"),
+          promptDialogCopiedLabel: t("copiedPrompt"),
+          promptDialogCopyErrorLabel: t("copyPromptError"),
+          promptDialogFieldLabel: t("groupingPromptField"),
         }}
         onClose={() => setIsModalOpen(false)}
       />

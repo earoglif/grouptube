@@ -32,5 +32,12 @@
   "importError": "Failed to import JSON file.",
   "noGroupsToExport": "No groups to export.",
   "exportSuccess": "Exported groups: {{count}}.",
-  "exportError": "Failed to export JSON file."
+  "exportError": "Failed to export JSON file.",
+  "openGroupingPrompt": "LLM Prompt",
+  "groupingPromptTitle": "LLM Grouping Prompt",
+  "groupingPromptDescription": "Copy this prompt and paste it into any LLM.",
+  "copyPrompt": "Copy Prompt",
+  "copiedPrompt": "Copied",
+  "copyPromptError": "Failed to copy prompt.",
+  "groupingPromptField": "Grouping prompt text"
 }

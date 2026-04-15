@@ -373,3 +373,79 @@
   font-size: 14px;
   line-height: 18px;
 }
+
+.grouptube-prompt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.56);
+}
+
+.grouptube-prompt-dialog,
+.grouptube-prompt-dialog * {
+  box-sizing: border-box;
+}
+
+.grouptube-prompt-dialog {
+  width: min(900px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  background: var(--yt-spec-base-background, #ffffff);
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.32);
+}
+
+.grouptube-prompt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+}
+
+.grouptube-prompt-title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 500;
+}
+
+.grouptube-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px 20px;
+  overflow: auto;
+}
+
+.grouptube-prompt-textarea {
+  width: 100%;
+  min-height: 360px;
+  max-height: 55vh;
+  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
+  padding: 12px;
+  background: var(--yt-spec-base-background, #ffffff);
+  color: var(--yt-spec-text-primary, #0f0f0f);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.grouptube-prompt-textarea:focus-visible {
+  outline: 2px solid #3ea6ff;
+  outline-offset: 1px;
+}
+
+.grouptube-prompt-actions {
+  justify-content: flex-end;
+}

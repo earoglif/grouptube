@@ -4,9 +4,11 @@ import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
 import { useSubscriptions } from "../hooks/useSubscriptions";
+import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
 import type { Subscription } from "../types";
 import { GroupForm } from "./GroupForm";
+import { GroupingPromptDialog } from "./GroupingPromptDialog";
 import { GroupList } from "./GroupList";
 import { SubscriptionList } from "./SubscriptionList";
 import { UNGROUPED_DROP_ID, parseGroupId, parseSubscriptionChannelId } from "./dnd";
@@ -34,6 +36,14 @@ export type ModalBodyLabels = {
   saveLabel: string;
   cancelLabel: string;
   deleteGroupConfirm: string;
+  openGroupingPromptLabel: string;
+  promptDialogTitle: string;
+  promptDialogDescription: string;
+  promptDialogCloseLabel: string;
+  promptDialogCopyLabel: string;
+  promptDialogCopiedLabel: string;
+  promptDialogCopyErrorLabel: string;
+  promptDialogFieldLabel: string;
 };
 
 type ModalBodyProps = {
@@ -82,6 +92,7 @@ function resolveDropTargetGroupId(
 
 export function ModalBody({ labels }: ModalBodyProps) {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
+  const [isGroupingPromptOpen, setIsGroupingPromptOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
   const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const {
@@ -149,6 +160,16 @@ export function ModalBody({ labels }: ModalBodyProps) {
     };
   }, [channelToGroupMap, groups, sortedSubscriptions]);
 
+  const groupingPrompt = useMemo(
+    () =>
+      buildGroupingPrompt({
+        groups,
+        subscriptions,
+        channelToGroupMap,
+      }),
+    [channelToGroupMap, groups, subscriptions]
+  );
+
   const handleSortModeChange = (nextSortMode: SubscriptionSortMode) => {
     setSortMode(nextSortMode);
     void saveSubscriptionSort(userId, nextSortMode);
@@ -197,6 +218,14 @@ export function ModalBody({ labels }: ModalBodyProps) {
         </button>
         <button type="button" className="grouptube-button" onClick={refresh}>
           {labels.refreshLabel}
+        </button>
+        <button
+          type="button"
+          className="grouptube-button"
+          onClick={() => setIsGroupingPromptOpen(true)}
+          disabled={subscriptions.length === 0}
+        >
+          {labels.openGroupingPromptLabel}
         </button>
         <label className="grouptube-toolbar-select-wrap">
           <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
@@ -282,6 +311,21 @@ export function ModalBody({ labels }: ModalBodyProps) {
           subscriptions={ungroupedSubscriptions}
         />
       </DndContext>
+
+      <GroupingPromptDialog
+        isOpen={isGroupingPromptOpen}
+        prompt={groupingPrompt}
+        labels={{
+          title: labels.promptDialogTitle,
+          description: labels.promptDialogDescription,
+          closeLabel: labels.promptDialogCloseLabel,
+          copyLabel: labels.promptDialogCopyLabel,
+          copiedLabel: labels.promptDialogCopiedLabel,
+          copyErrorLabel: labels.promptDialogCopyErrorLabel,
+          promptFieldLabel: labels.promptDialogFieldLabel,
+        }}
+        onClose={() => setIsGroupingPromptOpen(false)}
+      />
     </div>
   );
 }
