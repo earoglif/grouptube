@@ -5,6 +5,7 @@ export interface Subscription {
   channelId: ChannelId;
   name: string;
   thumbnailUrl?: string;
+  description?: string;
 }
 
 export interface Group {

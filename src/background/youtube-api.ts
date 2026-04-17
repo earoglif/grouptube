@@ -9,6 +9,7 @@ type AuthTokenResponse = string | { token?: string | null } | undefined;
 type SubscriptionListItem = {
   snippet?: {
     title?: string;
+    description?: string;
     resourceId?: {
       channelId?: string;
     };
@@ -73,10 +74,12 @@ function mapItemToSubscription(item: SubscriptionListItem): Subscription | null 
   }
 
   const thumbnailUrl = item.snippet?.thumbnails?.default?.url;
+  const description = item.snippet?.description?.trim();
   return {
     channelId,
     name,
     thumbnailUrl: typeof thumbnailUrl === "string" && thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
+    description: typeof description === "string" && description.length > 0 ? description : undefined,
   };
 }
 
@@ -85,7 +88,7 @@ async function fetchSubscriptionsPage(token: string, pageToken?: string): Promis
     part: "snippet",
     mine: "true",
     maxResults: String(PAGE_SIZE),
-    fields: "nextPageToken,items/snippet(title,resourceId/channelId,thumbnails/default/url)",
+    fields: "nextPageToken,items/snippet(title,description,resourceId/channelId,thumbnails/default/url)",
   });
 
   if (pageToken) {

@@ -4,7 +4,6 @@ import type { Group, GroupId, Subscription } from "../../content/types";
 import { getGroupNameKey, normalizeGroups, sanitizeText } from "../../shared/groups";
 
 const USER_ID_STORAGE_KEY = "grouptube_userId";
-const BACKUP_VERSION = 1;
 
 type GetSubscriptionsMessage = {
   action: "get-subscriptions";
@@ -19,11 +18,6 @@ type GetSubscriptionsResponse =
       ok: false;
       error: string;
     };
-
-type BackupPayload = {
-  version: number;
-  groups: unknown;
-};
 
 type ParsedImportPayload = {
   groups: Group[];
@@ -88,20 +82,15 @@ function parseImportPayload(content: string): ParsedImportPayload {
     throw new Error("Invalid backup JSON");
   }
 
-  if (!isRecord(parsed)) {
+  if (!isRecord(parsed) || !Array.isArray(parsed.groups)) {
     throw new Error("Invalid backup structure");
   }
 
-  const payload = parsed as BackupPayload;
-  if (payload.version !== BACKUP_VERSION || !Array.isArray(payload.groups)) {
-    throw new Error("Unsupported backup version");
-  }
-
-  const groups = normalizeGroups(payload.groups);
+  const groups = normalizeGroups(parsed.groups);
 
   return {
     groups,
-    skippedInvalidCount: payload.groups.length - groups.length,
+    skippedInvalidCount: parsed.groups.length - groups.length,
   };
 }
 
@@ -119,6 +108,7 @@ function normalizeSubscriptions(value: unknown): Subscription[] {
     const channelId = sanitizeText((item as { channelId?: unknown }).channelId);
     const name = sanitizeText((item as { name?: unknown }).name);
     const thumbnailUrl = sanitizeText((item as { thumbnailUrl?: unknown }).thumbnailUrl);
+    const description = sanitizeText((item as { description?: unknown }).description);
 
     if (!channelId || !name) {
       continue;
@@ -128,6 +118,7 @@ function normalizeSubscriptions(value: unknown): Subscription[] {
       channelId,
       name,
       thumbnailUrl: thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
+      description: description.length > 0 ? description : undefined,
     });
   }
 
@@ -171,10 +162,7 @@ export async function exportGroups(userId?: string | null): Promise<ExportGroups
     return { exportedCount: 0 };
   }
 
-  downloadJsonFile({
-    version: BACKUP_VERSION,
-    groups,
-  });
+  downloadJsonFile({ groups });
 
   return {
     exportedCount: groups.length,

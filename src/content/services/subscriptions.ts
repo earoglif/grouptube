@@ -38,6 +38,7 @@ function normalizeSubscriptions(value: unknown): Subscription[] {
     const channelId = (item as { channelId?: unknown }).channelId;
     const name = (item as { name?: unknown }).name;
     const thumbnailUrl = (item as { thumbnailUrl?: unknown }).thumbnailUrl;
+    const description = (item as { description?: unknown }).description;
 
     if (typeof channelId !== "string" || channelId.length === 0) {
       continue;
@@ -51,6 +52,7 @@ function normalizeSubscriptions(value: unknown): Subscription[] {
       channelId,
       name,
       thumbnailUrl: typeof thumbnailUrl === "string" && thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
+      description: typeof description === "string" && description.length > 0 ? description : undefined,
     });
   }
 
