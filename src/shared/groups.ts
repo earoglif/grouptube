@@ -1,6 +1,6 @@
 import type { ChannelId, Group } from "../content/types";
 
-const DEFAULT_GROUP_COLOR = "#3ea6ff";
+export const DEFAULT_GROUP_COLOR = "#3ea6ff";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;

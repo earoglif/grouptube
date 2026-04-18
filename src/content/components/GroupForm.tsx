@@ -1,5 +1,6 @@
 import { type FormEvent, useMemo, useState } from "react";
-import { ColorPicker, GROUP_COLORS } from "./ColorPicker";
+import { DEFAULT_GROUP_COLOR, sanitizeColor } from "../../shared/groups";
+import { ShadcnColorPicker } from "./ShadcnColorPicker";
 
 export type GroupFormValues = {
   name: string;
@@ -8,6 +9,7 @@ export type GroupFormValues = {
 
 export type GroupFormLabels = {
   namePlaceholder: string;
+  colorPickerLabel: string;
   createLabel: string;
   saveLabel: string;
   cancelLabel: string;
@@ -24,7 +26,9 @@ type GroupFormProps = {
 
 export function GroupForm({ mode, labels, initialName, initialColor, onSubmit, onCancel }: GroupFormProps) {
   const [name, setName] = useState(initialName ?? "");
-  const [color, setColor] = useState(initialColor ?? GROUP_COLORS[0]);
+  const [color, setColor] = useState(() =>
+    initialColor !== undefined ? sanitizeColor(initialColor) : DEFAULT_GROUP_COLOR
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submitLabel = useMemo(() => (mode === "create" ? labels.createLabel : labels.saveLabel), [labels, mode]);
@@ -44,14 +48,21 @@ export function GroupForm({ mode, labels, initialName, initialColor, onSubmit, o
 
   return (
     <form className="grouptube-group-form" onSubmit={handleSubmit}>
-      <input
-        className="grouptube-input"
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        placeholder={labels.namePlaceholder}
-        maxLength={40}
-      />
-      <ColorPicker value={color} onChange={setColor} />
+      <div className="grouptube-group-form-name-row">
+        <ShadcnColorPicker
+          value={color}
+          onChange={setColor}
+          disabled={isSubmitting}
+          aria-label={labels.colorPickerLabel}
+        />
+        <input
+          className="grouptube-input grouptube-group-form-name-input"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          placeholder={labels.namePlaceholder}
+          maxLength={40}
+        />
+      </div>
       <div className="grouptube-inline-actions">
         <button type="submit" className="grouptube-button is-primary" disabled={!name.trim() || isSubmitting}>
           {submitLabel}

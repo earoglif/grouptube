@@ -43,6 +43,7 @@ export type ModalBodyLabels = {
   groupDragHandleLabel: string;
   subscriptionDragHandleLabel: string;
   createNamePlaceholder: string;
+  groupColorPickerLabel: string;
   createLabel: string;
   saveLabel: string;
   cancelLabel: string;
@@ -316,6 +317,7 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
           mode="create"
           labels={{
             namePlaceholder: labels.createNamePlaceholder,
+            colorPickerLabel: labels.groupColorPickerLabel,
             createLabel: labels.createLabel,
             saveLabel: labels.saveLabel,
             cancelLabel: labels.cancelLabel,
@@ -359,6 +361,7 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
               }}
               formLabels={{
                 namePlaceholder: labels.createNamePlaceholder,
+                colorPickerLabel: labels.groupColorPickerLabel,
                 createLabel: labels.createLabel,
                 saveLabel: labels.saveLabel,
                 cancelLabel: labels.cancelLabel,

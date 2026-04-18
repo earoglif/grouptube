@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import modalStyles from "./groups-modal.css?inline";
 import { ModalBody, type ModalBodyHandle, type ModalBodyLabels } from "./components/ModalBody";
 import { ModalHeader } from "./components/ModalHeader";
+import { ModalPortalContainerContext } from "./modal-portal-context";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 
 const MODAL_TITLE_ID = "grouptube-manage-groups-modal-title";
@@ -97,27 +98,29 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
   };
 
   return createPortal(
-    <div className="grouptube-overlay" onClick={onOverlayClick} role="presentation">
-      <div className="grouptube-modal" role="dialog" aria-modal="true" aria-labelledby={MODAL_TITLE_ID}>
-        <ModalHeader
-          title={title}
-          titleId={MODAL_TITLE_ID}
-          openGroupingPromptLabel={labels.openGroupingPromptLabel}
-          onOpenGroupingPrompt={() => modalBodyRef.current?.openGroupingPrompt()}
-          groupingPromptDisabled={subscriptions.length === 0}
-          refreshLabel={labels.refreshLabel}
-          onRefresh={refresh}
-          closeLabel={labels.closeLabel}
-          onClose={onClose}
-        />
-        <ModalBody
-          ref={modalBodyRef}
-          labels={labels}
-          subscriptions={subscriptions}
-          isSubscriptionsLoading={isSubscriptionsLoading}
-        />
+    <ModalPortalContainerContext.Provider value={portalRoot}>
+      <div className="grouptube-overlay" onClick={onOverlayClick} role="presentation">
+        <div className="grouptube-modal" role="dialog" aria-modal="true" aria-labelledby={MODAL_TITLE_ID}>
+          <ModalHeader
+            title={title}
+            titleId={MODAL_TITLE_ID}
+            openGroupingPromptLabel={labels.openGroupingPromptLabel}
+            onOpenGroupingPrompt={() => modalBodyRef.current?.openGroupingPrompt()}
+            groupingPromptDisabled={subscriptions.length === 0}
+            refreshLabel={labels.refreshLabel}
+            onRefresh={refresh}
+            closeLabel={labels.closeLabel}
+            onClose={onClose}
+          />
+          <ModalBody
+            ref={modalBodyRef}
+            labels={labels}
+            subscriptions={subscriptions}
+            isSubscriptionsLoading={isSubscriptionsLoading}
+          />
+        </div>
       </div>
-    </div>,
+    </ModalPortalContainerContext.Provider>,
     portalRoot
   );
 }

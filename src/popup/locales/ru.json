@@ -24,6 +24,7 @@
   "dragGroup": "Перетащить группу",
   "dragSubscription": "Перетащить подписку",
   "groupNamePlaceholder": "Название группы",
+  "groupColorPicker": "Цвет группы",
   "createGroupAction": "Создать группу",
   "save": "Сохранить",
   "cancel": "Отмена",

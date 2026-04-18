@@ -51,6 +51,7 @@ function GuideGroupsSection() {
           groupDragHandleLabel: t("dragGroup"),
           subscriptionDragHandleLabel: t("dragSubscription"),
           createNamePlaceholder: t("groupNamePlaceholder"),
+          groupColorPickerLabel: t("groupColorPicker"),
           createLabel: t("createGroupAction"),
           saveLabel: t("save"),
           cancelLabel: t("cancel"),
