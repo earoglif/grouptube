@@ -17,8 +17,10 @@
 
 .grouptube-modal {
   width: min(860px, calc(100vw - 32px));
-  max-height: calc(100vh - 32px);
-  overflow: auto;
+  max-height: min(800px, calc(100vh - 32px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: 14px;
   border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
   background: var(--yt-spec-base-background, #ffffff);
@@ -27,8 +29,7 @@
 }
 
 .grouptube-modal-header {
-  position: sticky;
-  top: 0;
+  flex-shrink: 0;
   z-index: 2;
   display: flex;
   align-items: center;
@@ -63,10 +64,13 @@
 }
 
 .grouptube-modal-body {
+  flex: 1;
+  min-height: 0;
   padding: 16px 20px 22px;
   display: flex;
   flex-direction: column;
   gap: 14px;
+  overflow: auto;
 }
 
 .grouptube-toolbar {
@@ -177,6 +181,19 @@
   gap: 8px;
 }
 
+.grouptube-group-header-actions {
+  gap: 4px;
+}
+
+.grouptube-group-action-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
 .grouptube-info-text {
   margin: 2px 0;
   color: var(--yt-spec-text-secondary, #606060);
@@ -230,6 +247,12 @@
   justify-content: space-between;
   gap: 8px;
   padding: 10px 10px 8px;
+  border-radius: 12px 12px 0 0;
+  transition: background-color 0.15s ease;
+}
+
+.grouptube-group-header:hover {
+  background: var(--yt-spec-additive-background, #f2f2f2);
 }
 
 .grouptube-group-title-wrap {
@@ -280,7 +303,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0 8px 8px;
+  padding: 0 8px 8px 24px;
 }
 
 .grouptube-empty-text {
@@ -341,7 +364,7 @@
 }
 
 .grouptube-subscription-link:hover {
-  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.08));
+  background: var(--yt-spec-additive-background, #f2f2f2);
 }
 
 .grouptube-subscription-avatar-wrap {

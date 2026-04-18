@@ -298,7 +298,9 @@ export function ModalBody({ labels }: ModalBodyProps) {
               if (!window.confirm(labels.deleteGroupConfirm)) return;
               await deleteGroup(groupId);
             }}
-            onUpdateGroup={updateGroup}
+            onUpdateGroup={async (groupId, values) => {
+              await updateGroup(groupId, values);
+            }}
           />
         ) : (
           <p className="grouptube-info-text">{labels.noGroupsLabel}</p>

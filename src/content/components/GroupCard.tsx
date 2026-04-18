@@ -1,6 +1,7 @@
 import { useDndContext } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Group, Subscription } from "../types";
 import { GroupForm, type GroupFormLabels } from "./GroupForm";
@@ -75,12 +76,24 @@ export function GroupCard({ group, subscriptions, labels, formLabels, onDelete, 
           <span className="grouptube-group-color" style={{ backgroundColor: group.color }} />
           <h3 className="grouptube-group-title">{group.name}</h3>
         </div>
-        <div className="grouptube-inline-actions">
-          <button type="button" className="grouptube-button" onClick={() => setIsEditing((value) => !value)}>
-            {labels.editLabel}
+        <div className="grouptube-inline-actions grouptube-group-header-actions">
+          <button
+            type="button"
+            className="grouptube-icon-button grouptube-group-action-icon"
+            onClick={() => setIsEditing((value) => !value)}
+            title={labels.editLabel}
+            aria-label={labels.editLabel}
+          >
+            <Pencil size={18} strokeWidth={2} aria-hidden="true" />
           </button>
-          <button type="button" className="grouptube-button" onClick={() => void onDelete(group.id)}>
-            {labels.deleteLabel}
+          <button
+            type="button"
+            className="grouptube-icon-button grouptube-group-action-icon"
+            onClick={() => void onDelete(group.id)}
+            title={labels.deleteLabel}
+            aria-label={labels.deleteLabel}
+          >
+            <Trash2 size={18} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
       </div>
