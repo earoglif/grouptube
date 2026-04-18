@@ -1,7 +1,7 @@
 import { useDndContext } from "@dnd-kit/core";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Pencil, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
 import type { Group, Subscription } from "../types";
 import { GroupForm, type GroupFormLabels } from "./GroupForm";
@@ -21,14 +21,24 @@ export type GroupCardLabels = {
 type GroupCardProps = {
   group: Group;
   subscriptions: Subscription[];
+  isCollapsed: boolean;
+  onToggleCollapsed: () => void;
   labels: GroupCardLabels;
   formLabels: GroupFormLabels;
   onDelete: (groupId: string) => Promise<void> | void;
   onUpdate: (groupId: string, values: { name: string; color: string }) => Promise<void> | void;
 };
 
-export function GroupCard({ group, subscriptions, labels, formLabels, onDelete, onUpdate }: GroupCardProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+export function GroupCard({
+  group,
+  subscriptions,
+  isCollapsed,
+  onToggleCollapsed,
+  labels,
+  formLabels,
+  onDelete,
+  onUpdate,
+}: GroupCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const { active } = useDndContext();
 
@@ -68,10 +78,15 @@ export function GroupCard({ group, subscriptions, labels, formLabels, onDelete, 
           <button
             type="button"
             className="grouptube-collapse-toggle"
-            onClick={() => setIsCollapsed((value) => !value)}
+            onClick={onToggleCollapsed}
             aria-label={isCollapsed ? labels.expandLabel : labels.collapseLabel}
           >
-            {isCollapsed ? "▸" : "▾"}
+            <ChevronDown
+              size={18}
+              strokeWidth={2}
+              className={`grouptube-collapse-chevron${isCollapsed ? " is-collapsed" : ""}`}
+              aria-hidden="true"
+            />
           </button>
           <span className="grouptube-group-color" style={{ backgroundColor: group.color }} />
           <h3 className="grouptube-group-title">{group.name}</h3>

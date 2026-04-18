@@ -7,6 +7,8 @@ import { getGroupDragId } from "./dnd";
 type GroupListProps = {
   groups: Group[];
   subscriptionsByGroupId: Map<string, Subscription[]>;
+  collapsedGroupIds: ReadonlySet<string>;
+  onToggleGroupCollapsed: (groupId: string) => void;
   labels: GroupCardLabels;
   formLabels: GroupFormLabels;
   onDeleteGroup: (groupId: string) => Promise<void> | void;
@@ -16,6 +18,8 @@ type GroupListProps = {
 export function GroupList({
   groups,
   subscriptionsByGroupId,
+  collapsedGroupIds,
+  onToggleGroupCollapsed,
   labels,
   formLabels,
   onDeleteGroup,
@@ -29,6 +33,8 @@ export function GroupList({
             key={group.id}
             group={group}
             subscriptions={subscriptionsByGroupId.get(group.id) ?? []}
+            isCollapsed={collapsedGroupIds.has(group.id)}
+            onToggleCollapsed={() => onToggleGroupCollapsed(group.id)}
             labels={labels}
             formLabels={formLabels}
             onDelete={onDeleteGroup}

@@ -291,7 +291,21 @@
 }
 
 .grouptube-collapse-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  line-height: 0;
+}
+
+.grouptube-collapse-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+}
+
+.grouptube-collapse-chevron.is-collapsed {
+  transform: rotate(-90deg);
 }
 
 .grouptube-drag-handle:active {

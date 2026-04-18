@@ -19,6 +19,8 @@
   "delete": "Delete",
   "expandGroup": "Expand group",
   "collapseGroup": "Collapse group",
+  "expandAllGroups": "Expand all groups",
+  "collapseAllGroups": "Collapse all groups",
   "dragGroup": "Drag group",
   "dragSubscription": "Drag subscription",
   "groupNamePlaceholder": "Group name",

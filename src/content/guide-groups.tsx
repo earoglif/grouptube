@@ -46,6 +46,8 @@ function GuideGroupsSection() {
           groupDeleteLabel: t("delete"),
           groupExpandLabel: t("expandGroup"),
           groupCollapseLabel: t("collapseGroup"),
+          expandAllGroupsLabel: t("expandAllGroups"),
+          collapseAllGroupsLabel: t("collapseAllGroups"),
           groupDragHandleLabel: t("dragGroup"),
           subscriptionDragHandleLabel: t("dragSubscription"),
           createNamePlaceholder: t("groupNamePlaceholder"),

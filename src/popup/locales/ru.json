@@ -19,6 +19,8 @@
   "delete": "Удалить",
   "expandGroup": "Развернуть группу",
   "collapseGroup": "Свернуть группу",
+  "expandAllGroups": "Развернуть все группы",
+  "collapseAllGroups": "Свернуть все группы",
   "dragGroup": "Перетащить группу",
   "dragSubscription": "Перетащить подписку",
   "groupNamePlaceholder": "Название группы",

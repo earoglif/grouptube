@@ -39,6 +39,8 @@ export type ModalBodyLabels = {
   groupDeleteLabel: string;
   groupExpandLabel: string;
   groupCollapseLabel: string;
+  expandAllGroupsLabel: string;
+  collapseAllGroupsLabel: string;
   groupDragHandleLabel: string;
   subscriptionDragHandleLabel: string;
   createNamePlaceholder: string;
@@ -109,6 +111,7 @@ function resolveDropTargetGroupId(
 export function ModalBody({ labels }: ModalBodyProps) {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isGroupingPromptOpen, setIsGroupingPromptOpen] = useState(false);
+  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() => new Set<string>());
   const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
   const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const {
@@ -226,6 +229,26 @@ export function ModalBody({ labels }: ModalBodyProps) {
 
   const isLoading = isGroupsLoading || isSubscriptionsLoading;
 
+  const toggleGroupCollapsed = (groupId: string) => {
+    setCollapsedGroupIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
+
+  const allGroupsCollapsed =
+    groups.length > 0 && groups.every((group) => collapsedGroupIds.has(group.id));
+
+  const handleCollapseExpandAll = () => {
+    if (allGroupsCollapsed) {
+      setCollapsedGroupIds(new Set());
+    } else {
+      setCollapsedGroupIds(new Set(groups.map((group) => group.id)));
+    }
+  };
+
   return (
     <div className="grouptube-modal-body">
       <div className="grouptube-toolbar">
@@ -243,6 +266,11 @@ export function ModalBody({ labels }: ModalBodyProps) {
         >
           {labels.openGroupingPromptLabel}
         </button>
+        {!isLoading && groups.length > 0 ? (
+          <button type="button" className="grouptube-button" onClick={handleCollapseExpandAll}>
+            {allGroupsCollapsed ? labels.expandAllGroupsLabel : labels.collapseAllGroupsLabel}
+          </button>
+        ) : null}
         <label className="grouptube-toolbar-select-wrap">
           <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
           <select
@@ -295,6 +323,8 @@ export function ModalBody({ labels }: ModalBodyProps) {
           <GroupList
             groups={groups}
             subscriptionsByGroupId={subscriptionsByGroupId}
+            collapsedGroupIds={collapsedGroupIds}
+            onToggleGroupCollapsed={toggleGroupCollapsed}
             labels={{
               editLabel: labels.groupEditLabel,
               deleteLabel: labels.groupDeleteLabel,
