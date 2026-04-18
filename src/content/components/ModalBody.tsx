@@ -1,4 +1,14 @@
-import { DndContext, PointerSensor, closestCenter, type DragEndEvent, type Modifier, useSensor, useSensors } from "@dnd-kit/core";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  pointerWithin,
+  type CollisionDetection,
+  type DragEndEvent,
+  type Modifier,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
 import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -54,6 +64,12 @@ const restrictToVerticalAxis: Modifier = ({ transform }) => ({
   ...transform,
   x: 0,
 });
+
+const pointerThenClosestCenter: CollisionDetection = (args) => {
+  const pointerCollisions = pointerWithin(args);
+  if (pointerCollisions.length > 0) return pointerCollisions;
+  return closestCenter(args);
+};
 
 const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
 
@@ -271,7 +287,7 @@ export function ModalBody({ labels }: ModalBodyProps) {
 
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={pointerThenClosestCenter}
         modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
       >
