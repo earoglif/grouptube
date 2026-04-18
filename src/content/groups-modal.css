@@ -47,7 +47,17 @@
   font-weight: 500;
 }
 
+.grouptube-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
 .grouptube-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 34px;
   height: 34px;
   border: none;
@@ -61,6 +71,15 @@
 
 .grouptube-icon-button:hover {
   background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.08));
+}
+
+.grouptube-icon-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.grouptube-icon-button:disabled:hover {
+  background: transparent;
 }
 
 .grouptube-modal-body {
@@ -78,10 +97,19 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.grouptube-toolbar-end {
+  display: flex;
+  flex-grow: 1;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
 }
 
 .grouptube-toolbar-select-wrap {
-  margin-left: auto;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -129,6 +157,15 @@
 .grouptube-button.is-primary {
   background: #065fd4;
   color: #ffffff;
+}
+
+.grouptube-new-group-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 18px;
+  font-size: 16px;
 }
 
 .grouptube-button:disabled {
@@ -326,10 +363,10 @@
 }
 
 .grouptube-group-color {
-  width: 10px;
-  height: 10px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  flex: 0 0 10px;
+  flex: 0 0 22px;
 }
 
 .grouptube-group-title {
@@ -346,7 +383,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 0 8px 8px 24px;
+  padding: 0 8px 8px 46px;
 }
 
 .grouptube-empty-text {
@@ -387,7 +424,7 @@
 .grouptube-subscription-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   min-height: 34px;
   border-radius: 8px;
   background: transparent;

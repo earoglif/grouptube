@@ -1,8 +1,9 @@
-import { type Dispatch, type MouseEvent, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type MouseEvent, type SetStateAction, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import modalStyles from "./groups-modal.css?inline";
-import { ModalBody, type ModalBodyLabels } from "./components/ModalBody";
+import { ModalBody, type ModalBodyHandle, type ModalBodyLabels } from "./components/ModalBody";
 import { ModalHeader } from "./components/ModalHeader";
+import { useSubscriptions } from "./hooks/useSubscriptions";
 
 const MODAL_TITLE_ID = "grouptube-manage-groups-modal-title";
 const MODAL_HOST_ID = "grouptube-modal-host";
@@ -68,6 +69,7 @@ export function useCollapsedGroupsPersistence(userId: string | null): [
 
 export type GroupsModalLabels = ModalBodyLabels & {
   closeLabel: string;
+  refreshLabel: string;
 };
 
 type GroupsModalProps = {
@@ -76,6 +78,49 @@ type GroupsModalProps = {
   labels: GroupsModalLabels;
   onClose: () => void;
 };
+
+type GroupsModalPortalContentProps = {
+  portalRoot: HTMLElement;
+  title: string;
+  labels: GroupsModalLabels;
+  onClose: () => void;
+};
+
+function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: GroupsModalPortalContentProps) {
+  const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
+  const modalBodyRef = useRef<ModalBodyHandle>(null);
+
+  const onOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  return createPortal(
+    <div className="grouptube-overlay" onClick={onOverlayClick} role="presentation">
+      <div className="grouptube-modal" role="dialog" aria-modal="true" aria-labelledby={MODAL_TITLE_ID}>
+        <ModalHeader
+          title={title}
+          titleId={MODAL_TITLE_ID}
+          openGroupingPromptLabel={labels.openGroupingPromptLabel}
+          onOpenGroupingPrompt={() => modalBodyRef.current?.openGroupingPrompt()}
+          groupingPromptDisabled={subscriptions.length === 0}
+          refreshLabel={labels.refreshLabel}
+          onRefresh={refresh}
+          closeLabel={labels.closeLabel}
+          onClose={onClose}
+        />
+        <ModalBody
+          ref={modalBodyRef}
+          labels={labels}
+          subscriptions={subscriptions}
+          isSubscriptionsLoading={isSubscriptionsLoading}
+        />
+      </div>
+    </div>,
+    portalRoot
+  );
+}
 
 function ensureModalRoot(): HTMLElement {
   let host = document.getElementById(MODAL_HOST_ID);
@@ -153,19 +198,5 @@ export function GroupsModal({ isOpen, title, labels, onClose }: GroupsModalProps
 
   if (!isOpen || !portalRoot) return null;
 
-  const onOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
-    if (event.target === event.currentTarget) {
-      onClose();
-    }
-  };
-
-  return createPortal(
-    <div className="grouptube-overlay" onClick={onOverlayClick} role="presentation">
-      <div className="grouptube-modal" role="dialog" aria-modal="true" aria-labelledby={MODAL_TITLE_ID}>
-        <ModalHeader title={title} titleId={MODAL_TITLE_ID} closeLabel={labels.closeLabel} onClose={onClose} />
-        <ModalBody labels={labels} />
-      </div>
-    </div>,
-    portalRoot
-  );
+  return <GroupsModalPortalContent portalRoot={portalRoot} title={title} labels={labels} onClose={onClose} />;
 }

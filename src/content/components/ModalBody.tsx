@@ -10,10 +10,9 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { LoaderCircle } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { DiamondPlus, ListChevronsDownUp, ListChevronsUpDown, LoaderCircle } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
-import { useSubscriptions } from "../hooks/useSubscriptions";
 import { useCollapsedGroupsPersistence } from "../groups-modal";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
@@ -26,7 +25,6 @@ import { UNGROUPED_DROP_ID, parseGroupId, parseSubscriptionChannelId } from "./d
 
 export type ModalBodyLabels = {
   newGroupLabel: string;
-  refreshLabel: string;
   sortLabel: string;
   sortRelevanceLabel: string;
   sortNameAscLabel: string;
@@ -61,6 +59,12 @@ export type ModalBodyLabels = {
 
 type ModalBodyProps = {
   labels: ModalBodyLabels;
+  subscriptions: Subscription[];
+  isSubscriptionsLoading: boolean;
+};
+
+export type ModalBodyHandle = {
+  openGroupingPrompt: () => void;
 };
 
 const restrictToVerticalAxis: Modifier = ({ transform }) => ({
@@ -109,11 +113,13 @@ function resolveDropTargetGroupId(
   return undefined;
 }
 
-export function ModalBody({ labels }: ModalBodyProps) {
+export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function ModalBody(
+  { labels, subscriptions, isSubscriptionsLoading },
+  ref
+) {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isGroupingPromptOpen, setIsGroupingPromptOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
-  const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const {
     userId,
     groups,
@@ -125,6 +131,14 @@ export function ModalBody({ labels }: ModalBodyProps) {
     reorderGroups,
     assignChannelToGroup,
   } = useGroups();
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      openGroupingPrompt: () => setIsGroupingPromptOpen(true),
+    }),
+    []
+  );
 
   const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(userId);
 
@@ -254,41 +268,47 @@ export function ModalBody({ labels }: ModalBodyProps) {
   return (
     <div className="grouptube-modal-body">
       <div className="grouptube-toolbar">
-        <button type="button" className="grouptube-button is-primary" onClick={() => setIsCreateGroupOpen(true)}>
-          {labels.newGroupLabel}
-        </button>
-        <button type="button" className="grouptube-button" onClick={refresh}>
-          {labels.refreshLabel}
-        </button>
         <button
           type="button"
-          className="grouptube-button"
-          onClick={() => setIsGroupingPromptOpen(true)}
-          disabled={subscriptions.length === 0}
+          className="grouptube-button is-primary grouptube-new-group-button"
+          onClick={() => setIsCreateGroupOpen(true)}
         >
-          {labels.openGroupingPromptLabel}
+          <DiamondPlus size={24} strokeWidth={2} aria-hidden="true" />
+          {labels.newGroupLabel}
         </button>
-        {!isLoading && groups.length > 0 ? (
-          <button type="button" className="grouptube-button" onClick={handleCollapseExpandAll}>
-            {allGroupsCollapsed ? labels.expandAllGroupsLabel : labels.collapseAllGroupsLabel}
-          </button>
-        ) : null}
-        <label className="grouptube-toolbar-select-wrap">
-          <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
-          <select
-            className="grouptube-toolbar-select"
-            value={sortMode}
-            onChange={(event) => {
-              const nextSortMode = event.target.value;
-              if (!isSubscriptionSortMode(nextSortMode)) return;
-              handleSortModeChange(nextSortMode);
-            }}
-          >
-            <option value="relevance">{labels.sortRelevanceLabel}</option>
-            <option value="nameAsc">{labels.sortNameAscLabel}</option>
-            <option value="nameDesc">{labels.sortNameDescLabel}</option>
-          </select>
-        </label>
+        <div className="grouptube-toolbar-end">
+          <label className="grouptube-toolbar-select-wrap">
+            <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
+            <select
+              className="grouptube-toolbar-select"
+              value={sortMode}
+              onChange={(event) => {
+                const nextSortMode = event.target.value;
+                if (!isSubscriptionSortMode(nextSortMode)) return;
+                handleSortModeChange(nextSortMode);
+              }}
+            >
+              <option value="relevance">{labels.sortRelevanceLabel}</option>
+              <option value="nameAsc">{labels.sortNameAscLabel}</option>
+              <option value="nameDesc">{labels.sortNameDescLabel}</option>
+            </select>
+          </label>
+          {!isLoading && groups.length > 0 ? (
+            <button
+              type="button"
+              className="grouptube-icon-button"
+              aria-label={allGroupsCollapsed ? labels.expandAllGroupsLabel : labels.collapseAllGroupsLabel}
+              title={allGroupsCollapsed ? labels.expandAllGroupsLabel : labels.collapseAllGroupsLabel}
+              onClick={handleCollapseExpandAll}
+            >
+              {allGroupsCollapsed ? (
+                <ListChevronsUpDown size={20} strokeWidth={2} aria-hidden="true" />
+              ) : (
+                <ListChevronsDownUp size={20} strokeWidth={2} aria-hidden="true" />
+              )}
+            </button>
+          ) : null}
+        </div>
       </div>
 
       {isCreateGroupOpen ? (
@@ -380,4 +400,4 @@ export function ModalBody({ labels }: ModalBodyProps) {
       />
     </div>
   );
-}
+});
