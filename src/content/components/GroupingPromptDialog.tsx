@@ -96,9 +96,6 @@ export function GroupingPromptDialog({
             <button type="button" className="grouptube-button is-primary" onClick={copyPrompt}>
               {copyStatus === "copied" ? labels.copiedLabel : labels.copyLabel}
             </button>
-            <button type="button" className="grouptube-button" onClick={onClose}>
-              {labels.closeLabel}
-            </button>
           </div>
 
           {copyStatus === "error" ? <p className="grouptube-info-text">{labels.copyErrorLabel}</p> : null}
