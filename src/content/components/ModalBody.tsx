@@ -10,7 +10,13 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import { DiamondPlus, ListChevronsDownUp, ListChevronsUpDown, LoaderCircle } from "lucide-react";
+import {
+  ArrowDownUp,
+  DiamondPlus,
+  ListChevronsDownUp,
+  ListChevronsUpDown,
+  LoaderCircle,
+} from "lucide-react";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { useCollapsedGroupsPersistence } from "../hooks/useCollapsedGroups";
 import { useGroups } from "../hooks/useGroups";
@@ -278,10 +284,13 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
           {labels.newGroupLabel}
         </button>
         <div className="grouptube-toolbar-end">
-          <label className="grouptube-toolbar-select-wrap">
-            <span className="grouptube-toolbar-select-label">{labels.sortLabel}</span>
+          <label className="grouptube-toolbar-select-wrap" title={labels.sortLabel}>
+            <span className="grouptube-toolbar-select-label" aria-hidden="true">
+              <ArrowDownUp size={18} strokeWidth={2} />
+            </span>
             <select
               className="grouptube-toolbar-select"
+              aria-label={labels.sortLabel}
               value={sortMode}
               onChange={(event) => {
                 const nextSortMode = event.target.value;

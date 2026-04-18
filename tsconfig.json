@@ -10,7 +10,11 @@
     "noEmit": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
-    "types": ["firefox-webext-browser", "webextension-polyfill", "vite/client"]
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+    "types": ["node", "firefox-webext-browser", "webextension-polyfill", "vite/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "manifest.config.ts", "vite.config.ts"]
 }
