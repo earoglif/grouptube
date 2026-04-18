@@ -14,6 +14,7 @@ import { LoaderCircle } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useGroups } from "../hooks/useGroups";
 import { useSubscriptions } from "../hooks/useSubscriptions";
+import { useCollapsedGroupsPersistence } from "../groups-modal";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
 import type { Subscription } from "../types";
@@ -111,7 +112,6 @@ function resolveDropTargetGroupId(
 export function ModalBody({ labels }: ModalBodyProps) {
   const [isCreateGroupOpen, setIsCreateGroupOpen] = useState(false);
   const [isGroupingPromptOpen, setIsGroupingPromptOpen] = useState(false);
-  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() => new Set<string>());
   const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
   const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const {
@@ -125,6 +125,8 @@ export function ModalBody({ labels }: ModalBodyProps) {
     reorderGroups,
     assignChannelToGroup,
   } = useGroups();
+
+  const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(userId);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
