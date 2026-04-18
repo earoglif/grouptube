@@ -321,45 +321,47 @@ export function ModalBody({ labels }: ModalBodyProps) {
         modifiers={[restrictToVerticalAxis]}
         onDragEnd={handleDragEnd}
       >
-        {groups.length > 0 ? (
-          <GroupList
-            groups={groups}
-            subscriptionsByGroupId={subscriptionsByGroupId}
-            collapsedGroupIds={collapsedGroupIds}
-            onToggleGroupCollapsed={toggleGroupCollapsed}
-            labels={{
-              editLabel: labels.groupEditLabel,
-              deleteLabel: labels.groupDeleteLabel,
-              expandLabel: labels.groupExpandLabel,
-              collapseLabel: labels.groupCollapseLabel,
-              emptyLabel: labels.groupEmptyLabel,
-              dragGroupLabel: labels.groupDragHandleLabel,
-              dragSubscriptionLabel: labels.subscriptionDragHandleLabel,
-            }}
-            formLabels={{
-              namePlaceholder: labels.createNamePlaceholder,
-              createLabel: labels.createLabel,
-              saveLabel: labels.saveLabel,
-              cancelLabel: labels.cancelLabel,
-            }}
-            onDeleteGroup={async (groupId) => {
-              if (!window.confirm(labels.deleteGroupConfirm)) return;
-              await deleteGroup(groupId);
-            }}
-            onUpdateGroup={async (groupId, values) => {
-              await updateGroup(groupId, values);
-            }}
-          />
-        ) : (
-          <p className="grouptube-info-text">{labels.noGroupsLabel}</p>
-        )}
+        <div className="grouptube-modal-dnd">
+          {groups.length > 0 ? (
+            <GroupList
+              groups={groups}
+              subscriptionsByGroupId={subscriptionsByGroupId}
+              collapsedGroupIds={collapsedGroupIds}
+              onToggleGroupCollapsed={toggleGroupCollapsed}
+              labels={{
+                editLabel: labels.groupEditLabel,
+                deleteLabel: labels.groupDeleteLabel,
+                expandLabel: labels.groupExpandLabel,
+                collapseLabel: labels.groupCollapseLabel,
+                emptyLabel: labels.groupEmptyLabel,
+                dragGroupLabel: labels.groupDragHandleLabel,
+                dragSubscriptionLabel: labels.subscriptionDragHandleLabel,
+              }}
+              formLabels={{
+                namePlaceholder: labels.createNamePlaceholder,
+                createLabel: labels.createLabel,
+                saveLabel: labels.saveLabel,
+                cancelLabel: labels.cancelLabel,
+              }}
+              onDeleteGroup={async (groupId) => {
+                if (!window.confirm(labels.deleteGroupConfirm)) return;
+                await deleteGroup(groupId);
+              }}
+              onUpdateGroup={async (groupId, values) => {
+                await updateGroup(groupId, values);
+              }}
+            />
+          ) : (
+            <p className="grouptube-info-text">{labels.noGroupsLabel}</p>
+          )}
 
-        <SubscriptionList
-          title={labels.ungroupedTitle}
-          emptyLabel={labels.ungroupedEmptyLabel}
-          dragSubscriptionLabel={labels.subscriptionDragHandleLabel}
-          subscriptions={ungroupedSubscriptions}
-        />
+          <SubscriptionList
+            title={labels.ungroupedTitle}
+            emptyLabel={labels.ungroupedEmptyLabel}
+            dragSubscriptionLabel={labels.subscriptionDragHandleLabel}
+            subscriptions={ungroupedSubscriptions}
+          />
+        </div>
       </DndContext>
 
       <GroupingPromptDialog
