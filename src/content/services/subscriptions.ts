@@ -15,7 +15,6 @@ type GetSubscriptionsResponse =
       error: string;
     };
 
-let initialized = false;
 let lastSubscriptions: Subscription[] = [];
 const listeners = new Set<SubscriptionsListener>();
 
@@ -74,16 +73,10 @@ async function loadSubscriptions(): Promise<void> {
   emit(normalizeSubscriptions(response.subscriptions));
 }
 
-function ensureInitialized(): void {
-  if (initialized) return;
-  initialized = true;
-}
-
 export function subscribeToSubscriptions(
   listener: SubscriptionsListener,
   emitCached = true,
 ): () => void {
-  ensureInitialized();
   listeners.add(listener);
 
   if (emitCached && lastSubscriptions.length > 0) {
@@ -96,7 +89,6 @@ export function subscribeToSubscriptions(
 }
 
 export function requestSubscriptions(): void {
-  ensureInitialized();
   void loadSubscriptions().catch((error: unknown) => {
     console.error("Failed to request subscriptions", error);
     emit(lastSubscriptions);

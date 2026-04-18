@@ -12,8 +12,8 @@ import {
 import { arrayMove } from "@dnd-kit/sortable";
 import { DiamondPlus, ListChevronsDownUp, ListChevronsUpDown, LoaderCircle } from "lucide-react";
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
+import { useCollapsedGroupsPersistence } from "../hooks/useCollapsedGroups";
 import { useGroups } from "../hooks/useGroups";
-import { useCollapsedGroupsPersistence } from "../groups-modal";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
 import type { Subscription } from "../types";

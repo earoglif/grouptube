@@ -1,4 +1,4 @@
-import { type Dispatch, type MouseEvent, type SetStateAction, useEffect, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import modalStyles from "./groups-modal.css?inline";
 import { ModalBody, type ModalBodyHandle, type ModalBodyLabels } from "./components/ModalBody";
@@ -10,63 +10,6 @@ const MODAL_TITLE_ID = "grouptube-manage-groups-modal-title";
 const MODAL_HOST_ID = "grouptube-modal-host";
 const MODAL_ROOT_ID = "grouptube-modal-root";
 const MODAL_STYLE_ID = "grouptube-modal-styles";
-
-const COLLAPSED_GROUPS_STORAGE_PREFIX = "grouptube_collapsed_groups_";
-
-function collapsedGroupsStorageKey(userId: string | null): string {
-  return userId ? `${COLLAPSED_GROUPS_STORAGE_PREFIX}${userId}` : `${COLLAPSED_GROUPS_STORAGE_PREFIX}anonymous`;
-}
-
-function loadCollapsedGroupIdsFromStorage(userId: string | null): Set<string> {
-  if (typeof localStorage === "undefined") {
-    return new Set();
-  }
-
-  try {
-    const raw = localStorage.getItem(collapsedGroupsStorageKey(userId));
-    if (!raw) {
-      return new Set();
-    }
-
-    const parsed: unknown = JSON.parse(raw);
-    if (!Array.isArray(parsed)) {
-      return new Set();
-    }
-
-    return new Set(parsed.filter((id): id is string => typeof id === "string"));
-  } catch {
-    return new Set();
-  }
-}
-
-function saveCollapsedGroupIdsToStorage(userId: string | null, collapsedIds: Set<string>): void {
-  if (typeof localStorage === "undefined") {
-    return;
-  }
-
-  try {
-    localStorage.setItem(collapsedGroupsStorageKey(userId), JSON.stringify([...collapsedIds]));
-  } catch {
-    // ignore quota / private mode
-  }
-}
-
-export function useCollapsedGroupsPersistence(userId: string | null): [
-  Set<string>,
-  Dispatch<SetStateAction<Set<string>>>,
-] {
-  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() => loadCollapsedGroupIdsFromStorage(userId));
-
-  useEffect(() => {
-    setCollapsedGroupIds(loadCollapsedGroupIdsFromStorage(userId));
-  }, [userId]);
-
-  useEffect(() => {
-    saveCollapsedGroupIdsToStorage(userId, collapsedGroupIds);
-  }, [userId, collapsedGroupIds]);
-
-  return [collapsedGroupIds, setCollapsedGroupIds];
-}
 
 export type GroupsModalLabels = ModalBodyLabels & {
   closeLabel: string;
