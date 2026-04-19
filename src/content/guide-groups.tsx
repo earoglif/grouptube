@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import styles from "./guide-groups.css?inline";
+import { GuideGroupItem } from "./components/GuideGroupItem";
+import { GuideSubscriptionList } from "./components/GuideSubscriptionList";
 import { GroupsModal } from "./groups-modal";
+import { useCollapsedGroupsPersistence } from "./hooks/useCollapsedGroups";
+import { useGroups } from "./hooks/useGroups";
+import { useSubscriptions } from "./hooks/useSubscriptions";
 import { t } from "./i18n";
+import { sortSubscriptions } from "./services/sort-subscriptions";
+import { loadSubscriptionSort, type SubscriptionSortMode } from "./services/subscription-sort";
 
 const GROUPS_SECTION_ID = "grouptube-groups-section";
+const GUIDE_COLLAPSED_GROUPS_STORAGE_PREFIX = "grouptube_guide_collapsed_groups_";
+const GUIDE_SUBSCRIPTION_SORT_STORAGE_PREFIX = "grouptube_guide_subscription_sort_";
+
+function getCurrentPathname(): string {
+  if (typeof window === "undefined") return "/";
+  const trimmedPathname = window.location.pathname.replace(/\/+$/, "");
+  return trimmedPathname.length > 0 ? trimmedPathname : "/";
+}
 
 type GuideGroupsButtonProps = {
   onClick: () => void;
@@ -20,11 +35,117 @@ function GuideGroupsButton({ onClick }: GuideGroupsButtonProps) {
 
 function GuideGroupsSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
+  const [currentPathname, setCurrentPathname] = useState(getCurrentPathname);
+  const { userId, groups, isLoading: isGroupsLoading, channelToGroupMap } = useGroups();
+  const { subscriptions, isLoading: isSubscriptionsLoading } = useSubscriptions();
+  const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(
+    userId,
+    GUIDE_COLLAPSED_GROUPS_STORAGE_PREFIX
+  );
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    void loadSubscriptionSort(userId, GUIDE_SUBSCRIPTION_SORT_STORAGE_PREFIX)
+      .then((storedSortMode) => {
+        if (!isCancelled) {
+          setSortMode(storedSortMode);
+        }
+      })
+      .catch(() => {
+        if (!isCancelled) {
+          setSortMode("relevance");
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    const syncPathname = () => {
+      setCurrentPathname(getCurrentPathname());
+    };
+
+    window.addEventListener("popstate", syncPathname);
+    window.addEventListener("yt-navigate-finish", syncPathname);
+    window.addEventListener("yt-page-data-updated", syncPathname);
+
+    return () => {
+      window.removeEventListener("popstate", syncPathname);
+      window.removeEventListener("yt-navigate-finish", syncPathname);
+      window.removeEventListener("yt-page-data-updated", syncPathname);
+    };
+  }, []);
+
+  const sortedSubscriptions = useMemo(
+    () => sortSubscriptions(subscriptions, sortMode),
+    [subscriptions, sortMode]
+  );
+
+  const { subscriptionsByGroupId, ungroupedSubscriptions } = useMemo(() => {
+    const grouped = new Map<string, typeof subscriptions>();
+    for (const group of groups) {
+      grouped.set(group.id, []);
+    }
+
+    const ungrouped: typeof subscriptions = [];
+    for (const subscription of sortedSubscriptions) {
+      const groupId = channelToGroupMap.get(subscription.channelId);
+      if (groupId && grouped.has(groupId)) {
+        grouped.get(groupId)?.push(subscription);
+      } else {
+        ungrouped.push(subscription);
+      }
+    }
+
+    return {
+      subscriptionsByGroupId: grouped,
+      ungroupedSubscriptions: ungrouped,
+    };
+  }, [channelToGroupMap, groups, sortedSubscriptions, subscriptions]);
+
+  const isListLoading = isGroupsLoading || isSubscriptionsLoading;
+  const handleToggleCollapsed = (groupId: string) => {
+    setCollapsedGroupIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(groupId)) next.delete(groupId);
+      else next.add(groupId);
+      return next;
+    });
+  };
 
   return (
     <div className="guide-groups-container">
       <div className="guide-groups-section">
         <GuideGroupsButton onClick={() => setIsModalOpen(true)} />
+        {!isListLoading ? (
+          <div className="guide-groups-list">
+            {groups.map((group) => (
+              <GuideGroupItem
+                key={group.id}
+                group={group}
+                subscriptions={subscriptionsByGroupId.get(group.id) ?? []}
+                currentPathname={currentPathname}
+                isCollapsed={collapsedGroupIds.has(group.id)}
+                onToggleCollapsed={() => handleToggleCollapsed(group.id)}
+                labels={{
+                  emptyLabel: t("groupEmpty"),
+                  expandLabel: t("expandGroup"),
+                  collapseLabel: t("collapseGroup"),
+                }}
+              />
+            ))}
+            <GuideSubscriptionList
+              title={t("ungroupedSubscriptions")}
+              emptyLabel={t("ungroupedEmpty")}
+              currentPathname={currentPathname}
+              subscriptions={ungroupedSubscriptions}
+            />
+          </div>
+        ) : null}
       </div>
       <GroupsModal
         isOpen={isModalOpen}

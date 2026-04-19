@@ -21,6 +21,7 @@ import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "r
 import { useCollapsedGroupsPersistence } from "../hooks/useCollapsedGroups";
 import { useGroups } from "../hooks/useGroups";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
+import { isSubscriptionSortMode, sortSubscriptions } from "../services/sort-subscriptions";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
 import type { Subscription } from "../types";
 import { GroupForm } from "./GroupForm";
@@ -84,26 +85,6 @@ const pointerThenClosestCenter: CollisionDetection = (args) => {
   if (pointerCollisions.length > 0) return pointerCollisions;
   return closestCenter(args);
 };
-
-const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
-
-function isSubscriptionSortMode(value: string): value is SubscriptionSortMode {
-  return value === "relevance" || value === "nameAsc" || value === "nameDesc";
-}
-
-function sortSubscriptions(subscriptions: Subscription[], sortMode: SubscriptionSortMode): Subscription[] {
-  if (sortMode === "relevance") {
-    return subscriptions;
-  }
-
-  const sorted = [...subscriptions];
-  sorted.sort((left, right) =>
-    sortMode === "nameAsc"
-      ? NAME_COLLATOR.compare(left.name, right.name)
-      : NAME_COLLATOR.compare(right.name, left.name)
-  );
-  return sorted;
-}
 
 function resolveDropTargetGroupId(
   overId: unknown,

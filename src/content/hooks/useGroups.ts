@@ -9,6 +9,7 @@ import {
 } from "../services/storage";
 import { getLastUserId, requestUserId, subscribeToUserId } from "../services/user";
 import type { ChannelId, Group, GroupId } from "../types";
+import { storage as extensionStorage } from "webextension-polyfill";
 
 type CreateGroupInput = {
   name: string;
@@ -29,6 +30,12 @@ function reorderByIds(currentGroups: Group[], orderedGroupIds: GroupId[]): Group
   const remainingGroups = currentGroups.filter((group) => !orderedIdSet.has(group.id));
 
   return [...orderedGroups, ...remainingGroups];
+}
+
+const GROUPS_STORAGE_PREFIX = "grouptube_groups_";
+
+function buildGroupsStorageKey(userId: string | null): string {
+  return userId ? `${GROUPS_STORAGE_PREFIX}${userId}` : `${GROUPS_STORAGE_PREFIX}anonymous`;
 }
 
 export function useGroups() {
@@ -62,6 +69,19 @@ export function useGroups() {
       unsubscribe();
     };
   }, [loadForUser]);
+
+  useEffect(() => {
+    const targetStorageKey = buildGroupsStorageKey(userId);
+    const onStorageChanged: Parameters<typeof extensionStorage.onChanged.addListener>[0] = (changes, areaName) => {
+      if (areaName !== "local" || !changes[targetStorageKey]) return;
+      void loadForUser(userId);
+    };
+
+    extensionStorage.onChanged.addListener(onStorageChanged);
+    return () => {
+      extensionStorage.onChanged.removeListener(onStorageChanged);
+    };
+  }, [loadForUser, userId]);
 
   const channelToGroupMap = useMemo(() => {
     const map = new Map<ChannelId, GroupId>();

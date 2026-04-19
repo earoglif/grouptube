@@ -2,19 +2,19 @@ import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
 
 const COLLAPSED_GROUPS_STORAGE_PREFIX = "grouptube_collapsed_groups_";
 
-function collapsedGroupsStorageKey(userId: string | null): string {
+function collapsedGroupsStorageKey(userId: string | null, storagePrefix: string): string {
   return userId
-    ? `${COLLAPSED_GROUPS_STORAGE_PREFIX}${userId}`
-    : `${COLLAPSED_GROUPS_STORAGE_PREFIX}anonymous`;
+    ? `${storagePrefix}${userId}`
+    : `${storagePrefix}anonymous`;
 }
 
-function loadCollapsedGroupIdsFromStorage(userId: string | null): Set<string> {
+function loadCollapsedGroupIdsFromStorage(userId: string | null, storagePrefix: string): Set<string> {
   if (typeof localStorage === "undefined") {
     return new Set();
   }
 
   try {
-    const raw = localStorage.getItem(collapsedGroupsStorageKey(userId));
+    const raw = localStorage.getItem(collapsedGroupsStorageKey(userId, storagePrefix));
     if (!raw) {
       return new Set();
     }
@@ -30,31 +30,33 @@ function loadCollapsedGroupIdsFromStorage(userId: string | null): Set<string> {
   }
 }
 
-function saveCollapsedGroupIdsToStorage(userId: string | null, collapsedIds: Set<string>): void {
+function saveCollapsedGroupIdsToStorage(userId: string | null, collapsedIds: Set<string>, storagePrefix: string): void {
   if (typeof localStorage === "undefined") {
     return;
   }
 
   try {
-    localStorage.setItem(collapsedGroupsStorageKey(userId), JSON.stringify([...collapsedIds]));
+    localStorage.setItem(collapsedGroupsStorageKey(userId, storagePrefix), JSON.stringify([...collapsedIds]));
   } catch {
     // ignore quota / private mode
   }
 }
 
-export function useCollapsedGroupsPersistence(userId: string | null): [
-  Set<string>,
-  Dispatch<SetStateAction<Set<string>>>,
-] {
-  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() => loadCollapsedGroupIdsFromStorage(userId));
+export function useCollapsedGroupsPersistence(
+  userId: string | null,
+  storagePrefix = COLLAPSED_GROUPS_STORAGE_PREFIX
+): [Set<string>, Dispatch<SetStateAction<Set<string>>>] {
+  const [collapsedGroupIds, setCollapsedGroupIds] = useState(() =>
+    loadCollapsedGroupIdsFromStorage(userId, storagePrefix)
+  );
 
   useEffect(() => {
-    setCollapsedGroupIds(loadCollapsedGroupIdsFromStorage(userId));
-  }, [userId]);
+    setCollapsedGroupIds(loadCollapsedGroupIdsFromStorage(userId, storagePrefix));
+  }, [userId, storagePrefix]);
 
   useEffect(() => {
-    saveCollapsedGroupIdsToStorage(userId, collapsedGroupIds);
-  }, [userId, collapsedGroupIds]);
+    saveCollapsedGroupIdsToStorage(userId, collapsedGroupIds, storagePrefix);
+  }, [userId, collapsedGroupIds, storagePrefix]);
 
   return [collapsedGroupIds, setCollapsedGroupIds];
 }
