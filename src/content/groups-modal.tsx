@@ -1,10 +1,11 @@
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type MouseEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import modalStyles from "./groups-modal.css?inline";
 import { ModalBody, type ModalBodyHandle, type ModalBodyLabels } from "./components/ModalBody";
 import { ModalHeader } from "./components/ModalHeader";
 import { ModalPortalContainerContext } from "./modal-portal-context";
 import { useSubscriptions } from "./hooks/useSubscriptions";
+import { exportGroups, importGroups } from "../popup/services/export-import";
 
 const MODAL_TITLE_ID = "grouptube-manage-groups-modal-title";
 const MODAL_HOST_ID = "grouptube-modal-host";
@@ -14,6 +15,8 @@ const MODAL_STYLE_ID = "grouptube-modal-styles";
 export type GroupsModalLabels = ModalBodyLabels & {
   closeLabel: string;
   refreshLabel: string;
+  exportLabel: string;
+  importLabel: string;
 };
 
 type GroupsModalProps = {
@@ -33,11 +36,53 @@ type GroupsModalPortalContentProps = {
 function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: GroupsModalPortalContentProps) {
   const { subscriptions, isLoading: isSubscriptionsLoading, refresh } = useSubscriptions();
   const modalBodyRef = useRef<ModalBodyHandle>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [isImportExportBusy, setIsImportExportBusy] = useState(false);
 
   const onOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget) {
       onClose();
     }
+  };
+
+  const handleExport = (): void => {
+    setIsImportExportBusy(true);
+    void exportGroups()
+      .catch((error: unknown) => {
+        console.error("Failed to export groups", error);
+      })
+      .finally(() => {
+        setIsImportExportBusy(false);
+      });
+  };
+
+  const handleImportClick = (): void => {
+    if (isImportExportBusy) {
+      return;
+    }
+
+    fileInputRef.current?.click();
+  };
+
+  const handleImportFile = (event: ChangeEvent<HTMLInputElement>): void => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+
+    if (!file) {
+      return;
+    }
+
+    setIsImportExportBusy(true);
+    void importGroups(file)
+      .then(() => {
+        refresh();
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to import groups", error);
+      })
+      .finally(() => {
+        setIsImportExportBusy(false);
+      });
   };
 
   return createPortal(
@@ -50,10 +95,22 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
             openGroupingPromptLabel={labels.openGroupingPromptLabel}
             onOpenGroupingPrompt={() => modalBodyRef.current?.openGroupingPrompt()}
             groupingPromptDisabled={subscriptions.length === 0}
+            exportLabel={labels.exportLabel}
+            onExport={handleExport}
+            importLabel={labels.importLabel}
+            onImport={handleImportClick}
+            actionsDisabled={isImportExportBusy}
             refreshLabel={labels.refreshLabel}
             onRefresh={refresh}
             closeLabel={labels.closeLabel}
             onClose={onClose}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            style={{ display: "none" }}
+            onChange={handleImportFile}
           />
           <ModalBody
             ref={modalBodyRef}
