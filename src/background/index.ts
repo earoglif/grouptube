@@ -1,6 +1,6 @@
 import { runtime } from "webextension-polyfill";
 import type { ChannelId, Subscription } from "../content/types";
-import { fetchLatestUploadDates, fetchUserSubscriptions } from "./youtube-api";
+import { fetchChannelDetails, fetchLatestUploadDates, fetchUserSubscriptions } from "./youtube-api";
 import {
   isCacheFresh,
   loadLastSeen,
@@ -27,6 +27,11 @@ type MarkChannelSeenMessage = {
   channelId: string;
 };
 
+type GetChannelDetailsMessage = {
+  action: "get-channel-details";
+  channelId: string;
+};
+
 export type GetSubscriptionsResponse =
   | {
       ok: true;
@@ -49,6 +54,10 @@ export type GetChannelNewnessResponse =
 
 export type MarkChannelSeenResponse =
   | { ok: true }
+  | { ok: false; error: string };
+
+export type GetChannelDetailsResponse =
+  | { ok: true; subscription: Subscription | null }
   | { ok: false; error: string };
 
 function isGetSubscriptionsMessage(message: unknown): message is GetSubscriptionsMessage {
@@ -77,6 +86,18 @@ function isMarkChannelSeenMessage(message: unknown): message is MarkChannelSeenM
     typeof message !== "object" ||
     message === null ||
     (message as { action?: unknown }).action !== "mark-channel-seen"
+  ) {
+    return false;
+  }
+  const channelId = (message as { channelId?: unknown }).channelId;
+  return typeof channelId === "string" && channelId.length > 0;
+}
+
+function isGetChannelDetailsMessage(message: unknown): message is GetChannelDetailsMessage {
+  if (
+    typeof message !== "object" ||
+    message === null ||
+    (message as { action?: unknown }).action !== "get-channel-details"
   ) {
     return false;
   }
@@ -170,6 +191,16 @@ async function handleMarkChannelSeen(channelId: string): Promise<MarkChannelSeen
   }
 }
 
+async function handleGetChannelDetails(channelId: string): Promise<GetChannelDetailsResponse> {
+  try {
+    const subscription = await fetchChannelDetails(channelId);
+    return { ok: true, subscription };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to load channel details";
+    return { ok: false, error: message };
+  }
+}
+
 function init(): void {
   runtime.onInstalled.addListener(() => {
     console.log("BG loaded");
@@ -186,6 +217,10 @@ function init(): void {
 
     if (isMarkChannelSeenMessage(message)) {
       return handleMarkChannelSeen(message.channelId);
+    }
+
+    if (isGetChannelDetailsMessage(message)) {
+      return handleGetChannelDetails(message.channelId);
     }
 
     return undefined;

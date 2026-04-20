@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   assignChannelToGroup,
   createGroup,
+  createGroupAndAssignChannel,
   deleteGroup,
   loadGroups,
   reorderGroups,
@@ -143,6 +144,15 @@ export function useGroups() {
     [userId]
   );
 
+  const createGroupAndAssignChannelAction = useCallback(
+    async (channelId: ChannelId, input: CreateGroupInput) => {
+      const nextGroups = await createGroupAndAssignChannel(userId, channelId, input);
+      setGroups(nextGroups);
+      return nextGroups;
+    },
+    [userId]
+  );
+
   return {
     userId,
     groups,
@@ -153,5 +163,6 @@ export function useGroups() {
     deleteGroup: deleteGroupAction,
     reorderGroups: reorderGroupsAction,
     assignChannelToGroup: assignChannelAction,
+    createGroupAndAssignChannel: createGroupAndAssignChannelAction,
   };
 }

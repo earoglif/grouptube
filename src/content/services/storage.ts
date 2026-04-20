@@ -96,6 +96,36 @@ export async function reorderGroups(userId: string | null, orderedGroupIds: Grou
   return nextGroups;
 }
 
+export async function createGroupAndAssignChannel(
+  userId: string | null,
+  channelId: ChannelId,
+  input: GroupCreateInput
+): Promise<Group[]> {
+  const groups = await loadGroups(userId);
+  const name = sanitizeText(input.name);
+  if (!name) return groups;
+
+  const normalizedChannelId = sanitizeText(channelId);
+
+  const cleanedGroups: Group[] = normalizedChannelId
+    ? groups.map((group) => ({
+        ...group,
+        channelIds: group.channelIds.filter((id) => id !== normalizedChannelId),
+      }))
+    : groups;
+
+  const newGroup: Group = {
+    id: createGroupId(),
+    name,
+    color: sanitizeColor(input.color),
+    channelIds: normalizedChannelId ? [normalizedChannelId] : [],
+  };
+
+  const nextGroups = [...cleanedGroups, newGroup];
+  await saveGroups(userId, nextGroups);
+  return nextGroups;
+}
+
 export async function assignChannelToGroup(
   userId: string | null,
   channelId: ChannelId,

@@ -42,5 +42,9 @@
   "copyPrompt": "Скопировать промпт",
   "copiedPrompt": "Скопировано",
   "copyPromptError": "Не удалось скопировать промпт.",
-  "groupingPromptField": "Текст промпта для группировки"
+  "groupingPromptField": "Текст промпта для группировки",
+  "assignGroupTitle": "Добавить в группу",
+  "assignGroupDescription": "Выберите существующую группу для канала или создайте новую.",
+  "assignSkipLabel": "Пропустить",
+  "assignCreateNewGroupLabel": "Создать новую группу"
 }

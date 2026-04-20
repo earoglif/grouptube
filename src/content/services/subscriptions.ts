@@ -5,10 +5,25 @@ type SubscriptionsListener = (subscriptions: Subscription[]) => void;
 type GetSubscriptionsMessage = {
   action: "get-subscriptions";
 };
+
+type GetChannelDetailsMessage = {
+  action: "get-channel-details";
+  channelId: string;
+};
 type GetSubscriptionsResponse =
   | {
       ok: true;
       subscriptions: Subscription[];
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
+type GetChannelDetailsResponse =
+  | {
+      ok: true;
+      subscription: Subscription | null;
     }
   | {
       ok: false;
@@ -97,4 +112,77 @@ export function requestSubscriptions(): void {
 
 export function getLastSubscriptions(): Subscription[] {
   return lastSubscriptions;
+}
+
+export function upsertSubscription(subscription: Subscription): void {
+  const channelId = typeof subscription.channelId === "string" ? subscription.channelId.trim() : "";
+  if (!channelId) return;
+
+  const name = typeof subscription.name === "string" ? subscription.name.trim() : "";
+  if (!name) return;
+
+  const nextItem: Subscription = {
+    channelId,
+    name,
+    thumbnailUrl:
+      typeof subscription.thumbnailUrl === "string" && subscription.thumbnailUrl.length > 0
+        ? subscription.thumbnailUrl
+        : undefined,
+    description:
+      typeof subscription.description === "string" && subscription.description.length > 0
+        ? subscription.description
+        : undefined,
+  };
+
+  const existingIndex = lastSubscriptions.findIndex((item) => item.channelId === channelId);
+  if (existingIndex < 0) {
+    emit([...lastSubscriptions, nextItem]);
+    return;
+  }
+
+  const existing = lastSubscriptions[existingIndex];
+  const merged: Subscription = {
+    ...existing,
+    ...nextItem,
+    name: nextItem.name || existing.name,
+    thumbnailUrl: nextItem.thumbnailUrl ?? existing.thumbnailUrl,
+    description: nextItem.description ?? existing.description,
+  };
+
+  const nextList = [...lastSubscriptions];
+  nextList[existingIndex] = merged;
+  emit(nextList);
+}
+
+export function removeSubscriptions(channelIds: string[]): void {
+  const ids = Array.isArray(channelIds)
+    ? channelIds
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0)
+    : [];
+  if (ids.length === 0) return;
+
+  const idSet = new Set(ids);
+  const nextList = lastSubscriptions.filter((item) => !idSet.has(item.channelId));
+  if (nextList.length === lastSubscriptions.length) return;
+  emit(nextList);
+}
+
+export async function requestChannelDetails(channelId: string): Promise<Subscription | null> {
+  const normalizedChannelId = typeof channelId === "string" ? channelId.trim() : "";
+  if (!normalizedChannelId) return null;
+
+  const message: GetChannelDetailsMessage = {
+    action: "get-channel-details",
+    channelId: normalizedChannelId,
+  };
+  const response = (await runtime.sendMessage(message)) as GetChannelDetailsResponse | undefined;
+  if (!response || typeof response !== "object") {
+    throw new Error("Invalid channel details response");
+  }
+  if (!response.ok) {
+    throw new Error(response.error || "Failed to load channel details");
+  }
+  return response.subscription ?? null;
 }

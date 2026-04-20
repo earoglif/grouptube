@@ -2,6 +2,7 @@ import { storage } from "webextension-polyfill";
 import { getCurrentLanguage } from "../utils/getCurrentLanguage";
 import { initGuideGroups } from "./guide-groups";
 import { ensurePageBridgeInjected } from "./services/page-bridge";
+import { initSubscribeAssign } from "./subscribe-assign";
 
 const POPUP_LANGUAGE_STORAGE_KEY = "popupLanguage";
 
@@ -18,6 +19,7 @@ function init(): void {
   ensurePageBridgeInjected();
   void persistPageLanguage();
   initGuideGroups();
+  initSubscribeAssign();
 }
 
 init();

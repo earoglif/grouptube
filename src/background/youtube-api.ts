@@ -3,6 +3,7 @@ import type { ChannelId, Subscription } from "../content/types";
 
 const YOUTUBE_SUBSCRIPTIONS_URL = "https://www.googleapis.com/youtube/v3/subscriptions";
 const YOUTUBE_PLAYLIST_ITEMS_URL = "https://www.googleapis.com/youtube/v3/playlistItems";
+const YOUTUBE_CHANNELS_URL = "https://www.googleapis.com/youtube/v3/channels";
 const PAGE_SIZE = 50;
 const LATEST_UPLOAD_CONCURRENCY = 8;
 
@@ -148,6 +149,24 @@ type PlaylistItemsResponse = {
   };
 };
 
+type ChannelDetailsResponse = {
+  items?: Array<{
+    id?: string;
+    snippet?: {
+      title?: string;
+      description?: string;
+      thumbnails?: {
+        default?: { url?: string };
+        medium?: { url?: string };
+        high?: { url?: string };
+      };
+    };
+  }>;
+  error?: {
+    message?: string;
+  };
+};
+
 function channelIdToUploadsPlaylistId(channelId: ChannelId): string | null {
   if (!channelId.startsWith("UC") || channelId.length < 3) return null;
   return `UU${channelId.slice(2)}`;
@@ -229,4 +248,49 @@ export async function fetchLatestUploadDates(
     }
   }
   return result;
+}
+
+export async function fetchChannelDetails(
+  channelId: ChannelId,
+): Promise<Subscription | null> {
+  const normalizedChannelId = channelId.trim();
+  if (!normalizedChannelId) return null;
+
+  const token = await getOAuthToken();
+  const query = new URLSearchParams({
+    part: "snippet",
+    id: normalizedChannelId,
+    fields: "items(id,snippet(title,description,thumbnails(default/url,medium/url,high/url)))",
+  });
+
+  const response = await fetch(`${YOUTUBE_CHANNELS_URL}?${query.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const payload = (await response.json()) as ChannelDetailsResponse;
+  if (!response.ok) {
+    const message = payload.error?.message || `YouTube channel request failed with status ${response.status}`;
+    throw new Error(message);
+  }
+
+  const item = payload.items?.[0];
+  if (!item) return null;
+
+  const name = item.snippet?.title?.trim();
+  if (!name) return null;
+
+  const thumbnailUrl =
+    item.snippet?.thumbnails?.high?.url ||
+    item.snippet?.thumbnails?.medium?.url ||
+    item.snippet?.thumbnails?.default?.url;
+  const description = item.snippet?.description?.trim();
+
+  return {
+    channelId: normalizedChannelId,
+    name,
+    thumbnailUrl: typeof thumbnailUrl === "string" && thumbnailUrl.length > 0 ? thumbnailUrl : undefined,
+    description: typeof description === "string" && description.length > 0 ? description : undefined,
+  };
 }

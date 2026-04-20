@@ -42,5 +42,9 @@
   "copyPrompt": "Copy Prompt",
   "copiedPrompt": "Copied",
   "copyPromptError": "Failed to copy prompt.",
-  "groupingPromptField": "Grouping prompt text"
+  "groupingPromptField": "Grouping prompt text",
+  "assignGroupTitle": "Add to group",
+  "assignGroupDescription": "Pick an existing group for this channel or create a new one.",
+  "assignSkipLabel": "Skip",
+  "assignCreateNewGroupLabel": "Create new group"
 }
