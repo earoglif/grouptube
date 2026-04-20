@@ -1,3 +1,4 @@
+import { handleYouTubeSpaLinkClick } from "../services/yt-navigation";
 import type { Subscription } from "../types";
 
 type GuideSubscriptionItemProps = {
@@ -18,13 +19,20 @@ function isActiveSubscriptionPath(channelId: string, currentPathname: string): b
 
 export function GuideSubscriptionItem({ subscription, currentPathname }: GuideSubscriptionItemProps) {
   const isActive = isActiveSubscriptionPath(subscription.channelId, currentPathname);
+  const channelUrl = `/channel/${subscription.channelId}`;
 
   return (
     <a
       className={`guide-sub-item${isActive ? " is-active" : ""}`}
-      href={`/channel/${subscription.channelId}`}
+      href={channelUrl}
       title={subscription.name}
       aria-current={isActive ? "page" : undefined}
+      onClick={(event) =>
+        handleYouTubeSpaLinkClick(event, {
+          url: channelUrl,
+          browseId: subscription.channelId,
+        })
+      }
     >
       <span className="guide-sub-avatar-wrap" aria-hidden="true">
         {subscription.thumbnailUrl ? (
