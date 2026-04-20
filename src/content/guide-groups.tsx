@@ -4,6 +4,7 @@ import styles from "./guide-groups.css?inline";
 import { GuideGroupItem } from "./components/GuideGroupItem";
 import { GuideSubscriptionList } from "./components/GuideSubscriptionList";
 import { GroupsModal } from "./groups-modal";
+import { useChannelNewness } from "./hooks/useChannelNewness";
 import { useCollapsedGroupsPersistence } from "./hooks/useCollapsedGroups";
 import { useGroups } from "./hooks/useGroups";
 import { useSubscriptions } from "./hooks/useSubscriptions";
@@ -39,6 +40,7 @@ function GuideGroupsSection() {
   const [currentPathname, setCurrentPathname] = useState(getCurrentPathname);
   const { userId, groups, isLoading: isGroupsLoading, channelToGroupMap } = useGroups();
   const { subscriptions, isLoading: isSubscriptionsLoading } = useSubscriptions();
+  const { newnessMap, markSeen } = useChannelNewness(subscriptions);
   const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(
     userId,
     GUIDE_COLLAPSED_GROUPS_STORAGE_PREFIX
@@ -79,6 +81,15 @@ function GuideGroupsSection() {
       window.removeEventListener("yt-page-data-updated", syncPathname);
     };
   }, []);
+
+  useEffect(() => {
+    const match = currentPathname.match(/^\/channel\/([^/]+)/);
+    if (!match) return;
+    const channelId = match[1];
+    const isSubscribed = subscriptions.some((sub) => sub.channelId === channelId);
+    if (!isSubscribed) return;
+    markSeen(channelId);
+  }, [currentPathname, subscriptions, markSeen]);
 
   const sortedSubscriptions = useMemo(
     () => sortSubscriptions(subscriptions, sortMode),
@@ -136,6 +147,8 @@ function GuideGroupsSection() {
                   expandLabel: t("expandGroup"),
                   collapseLabel: t("collapseGroup"),
                 }}
+                newnessMap={newnessMap}
+                onChannelSeen={markSeen}
               />
             ))}
             <GuideSubscriptionList
@@ -143,6 +156,8 @@ function GuideGroupsSection() {
               emptyLabel={t("ungroupedEmpty")}
               currentPathname={currentPathname}
               subscriptions={ungroupedSubscriptions}
+              newnessMap={newnessMap}
+              onChannelSeen={markSeen}
             />
           </div>
         ) : null}

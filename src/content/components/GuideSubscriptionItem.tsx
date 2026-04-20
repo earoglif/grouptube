@@ -1,9 +1,11 @@
 import { handleYouTubeSpaLinkClick } from "../services/yt-navigation";
-import type { Subscription } from "../types";
+import type { ChannelId, Subscription } from "../types";
 
 type GuideSubscriptionItemProps = {
   subscription: Subscription;
   currentPathname: string;
+  hasNewContent?: boolean;
+  onSeen?: (channelId: ChannelId) => void;
 };
 
 function normalizePathname(pathname: string): string {
@@ -17,7 +19,12 @@ function isActiveSubscriptionPath(channelId: string, currentPathname: string): b
   return normalizedPathname === channelPath || normalizedPathname.startsWith(`${channelPath}/`);
 }
 
-export function GuideSubscriptionItem({ subscription, currentPathname }: GuideSubscriptionItemProps) {
+export function GuideSubscriptionItem({
+  subscription,
+  currentPathname,
+  hasNewContent,
+  onSeen,
+}: GuideSubscriptionItemProps) {
   const isActive = isActiveSubscriptionPath(subscription.channelId, currentPathname);
   const channelUrl = `/channel/${subscription.channelId}`;
 
@@ -27,12 +34,13 @@ export function GuideSubscriptionItem({ subscription, currentPathname }: GuideSu
       href={channelUrl}
       title={subscription.name}
       aria-current={isActive ? "page" : undefined}
-      onClick={(event) =>
+      onClick={(event) => {
+        onSeen?.(subscription.channelId);
         handleYouTubeSpaLinkClick(event, {
           url: channelUrl,
           browseId: subscription.channelId,
-        })
-      }
+        });
+      }}
     >
       <span className="guide-sub-avatar-wrap" aria-hidden="true">
         {subscription.thumbnailUrl ? (
@@ -48,6 +56,7 @@ export function GuideSubscriptionItem({ subscription, currentPathname }: GuideSu
         )}
       </span>
       <span className="guide-sub-name">{subscription.name}</span>
+      {hasNewContent ? <span className="guide-sub-newness-dot" aria-hidden="true" /> : null}
     </a>
   );
 }

@@ -6,6 +6,7 @@ export interface Subscription {
   name: string;
   thumbnailUrl?: string;
   description?: string;
+  hasNewContent?: boolean;
 }
 
 export interface Group {

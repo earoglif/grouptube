@@ -1,8 +1,10 @@
 import { identity } from "webextension-polyfill";
-import type { Subscription } from "../content/types";
+import type { ChannelId, Subscription } from "../content/types";
 
 const YOUTUBE_SUBSCRIPTIONS_URL = "https://www.googleapis.com/youtube/v3/subscriptions";
+const YOUTUBE_PLAYLIST_ITEMS_URL = "https://www.googleapis.com/youtube/v3/playlistItems";
 const PAGE_SIZE = 50;
+const LATEST_UPLOAD_CONCURRENCY = 8;
 
 type AuthTokenResponse = string | { token?: string | null } | undefined;
 
@@ -45,7 +47,7 @@ function extractToken(response: AuthTokenResponse): string | null {
   return null;
 }
 
-async function getOAuthToken(): Promise<string> {
+export async function getOAuthToken(): Promise<string> {
   const identityApi = identity as unknown as IdentityLike;
 
   try {
@@ -133,4 +135,98 @@ export async function fetchUserSubscriptions(): Promise<Subscription[]> {
   } while (pageToken);
 
   return subscriptions;
+}
+
+type PlaylistItemsResponse = {
+  items?: Array<{
+    contentDetails?: {
+      videoPublishedAt?: string;
+    };
+  }>;
+  error?: {
+    message?: string;
+  };
+};
+
+function channelIdToUploadsPlaylistId(channelId: ChannelId): string | null {
+  if (!channelId.startsWith("UC") || channelId.length < 3) return null;
+  return `UU${channelId.slice(2)}`;
+}
+
+async function fetchLatestUploadDate(token: string, channelId: ChannelId): Promise<string | null> {
+  const playlistId = channelIdToUploadsPlaylistId(channelId);
+  if (!playlistId) return null;
+
+  const query = new URLSearchParams({
+    part: "contentDetails",
+    playlistId,
+    maxResults: "1",
+    fields: "items/contentDetails/videoPublishedAt",
+  });
+
+  try {
+    const response = await fetch(`${YOUTUBE_PLAYLIST_ITEMS_URL}?${query.toString()}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const payload = (await response.json()) as PlaylistItemsResponse;
+    const publishedAt = payload.items?.[0]?.contentDetails?.videoPublishedAt;
+    return typeof publishedAt === "string" && publishedAt.length > 0 ? publishedAt : null;
+  } catch {
+    return null;
+  }
+}
+
+async function runWithConcurrency<T>(
+  tasks: Array<() => Promise<T>>,
+  concurrency: number,
+): Promise<T[]> {
+  const results: T[] = new Array(tasks.length);
+  let cursor = 0;
+
+  async function worker(): Promise<void> {
+    while (true) {
+      const index = cursor++;
+      if (index >= tasks.length) return;
+      results[index] = await tasks[index]();
+    }
+  }
+
+  const workers: Promise<void>[] = [];
+  const workerCount = Math.min(Math.max(1, concurrency), tasks.length);
+  for (let i = 0; i < workerCount; i += 1) {
+    workers.push(worker());
+  }
+  await Promise.all(workers);
+  return results;
+}
+
+export async function fetchLatestUploadDates(
+  channelIds: ChannelId[],
+): Promise<Record<ChannelId, string>> {
+  if (channelIds.length === 0) return {};
+
+  const token = await getOAuthToken();
+  const uniqueIds = Array.from(new Set(channelIds));
+
+  const tasks = uniqueIds.map((channelId) => async (): Promise<[ChannelId, string | null]> => {
+    const publishedAt = await fetchLatestUploadDate(token, channelId);
+    return [channelId, publishedAt];
+  });
+
+  const entries = await runWithConcurrency(tasks, LATEST_UPLOAD_CONCURRENCY);
+
+  const result: Record<ChannelId, string> = {};
+  for (const [channelId, publishedAt] of entries) {
+    if (publishedAt) {
+      result[channelId] = publishedAt;
+    }
+  }
+  return result;
 }

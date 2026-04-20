@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import type { Group, Subscription } from "../types";
+import type { ChannelId, Group, Subscription } from "../types";
 import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideGroupItemLabels = {
@@ -15,6 +15,8 @@ type GuideGroupItemProps = {
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
   labels: GuideGroupItemLabels;
+  newnessMap?: Map<ChannelId, boolean>;
+  onChannelSeen?: (channelId: ChannelId) => void;
 };
 
 export function GuideGroupItem({
@@ -24,6 +26,8 @@ export function GuideGroupItem({
   isCollapsed,
   onToggleCollapsed,
   labels,
+  newnessMap,
+  onChannelSeen,
 }: GuideGroupItemProps) {
   return (
     <section className="guide-group">
@@ -52,6 +56,8 @@ export function GuideGroupItem({
                 key={subscription.channelId}
                 subscription={subscription}
                 currentPathname={currentPathname}
+                hasNewContent={newnessMap?.get(subscription.channelId) ?? false}
+                onSeen={onChannelSeen}
               />
             ))
           ) : (
