@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useState } from "react";
+import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
 
 type CopyStatus = "idle" | "copied" | "error";
 
@@ -35,22 +35,6 @@ export function GroupingPromptDialog({
     }
   }, [isOpen, prompt]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      event.preventDefault();
-      event.stopPropagation();
-      onClose();
-    };
-
-    document.addEventListener("keydown", onKeyDown, true);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown, true);
-    };
-  }, [isOpen, onClose]);
-
   if (!isOpen) {
     return null;
   }
@@ -70,8 +54,31 @@ export function GroupingPromptDialog({
     }
   };
 
+  const stopKeyboardPropagation = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+  };
+
+  const onOverlayKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+  };
+
+  const onOverlayKeyUp = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+  };
+
   return (
-    <div className="grouptube-prompt-overlay" onClick={onOverlayClick} role="presentation">
+    <div
+      className="grouptube-prompt-overlay"
+      onClick={onOverlayClick}
+      onKeyDown={onOverlayKeyDown}
+      onKeyUp={onOverlayKeyUp}
+      role="presentation"
+    >
       <div className="grouptube-prompt-dialog" role="dialog" aria-modal="true" aria-labelledby={PROMPT_DIALOG_TITLE_ID}>
         <div className="grouptube-prompt-header">
           <h3 id={PROMPT_DIALOG_TITLE_ID} className="grouptube-prompt-title">

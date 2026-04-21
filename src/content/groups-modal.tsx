@@ -1,4 +1,4 @@
-import { type ChangeEvent, type MouseEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ToastHost } from "../components/ui/toast";
 import { notify } from "../shared/services/notifications";
@@ -48,6 +48,23 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
     }
   };
 
+  const stopKeyboardPropagation = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+  };
+
+  const onOverlayKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      onClose();
+    }
+  };
+
+  const onOverlayKeyUp = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+  };
+
   const handleExport = (): void => {
     setIsImportExportBusy(true);
     void exportGroups()
@@ -92,7 +109,13 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
 
   return createPortal(
     <ModalPortalContainerContext.Provider value={portalRoot}>
-      <div className="grouptube-overlay" onClick={onOverlayClick} role="presentation">
+      <div
+        className="grouptube-overlay"
+        onClick={onOverlayClick}
+        onKeyDown={onOverlayKeyDown}
+        onKeyUp={onOverlayKeyUp}
+        role="presentation"
+      >
         <div className="grouptube-modal" role="dialog" aria-modal="true" aria-labelledby={MODAL_TITLE_ID}>
           <ModalHeader
             title={title}
@@ -177,21 +200,6 @@ export function GroupsModal({ isOpen, title, labels, onClose }: GroupsModalProps
       body.style.paddingRight = prevBodyPaddingRight;
     };
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [isOpen, onClose]);
 
   if (!isOpen || !portalRoot) return null;
 

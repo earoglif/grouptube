@@ -1,4 +1,4 @@
-import { type MouseEvent, useEffect, useState } from "react";
+import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
 import { DiamondPlus } from "lucide-react";
 import type { Group, GroupId } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
@@ -40,14 +40,13 @@ export function AssignGroupDialog({
   const [isBusy, setIsBusy] = useState(false);
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !isBusy) onClose();
-    };
-    document.addEventListener("keydown", onKeyDown);
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
+      body.style.overflow = previousOverflow;
     };
-  }, [isBusy, onClose]);
+  }, []);
 
   const handleOverlayClick = (event: MouseEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget || isBusy) return;
@@ -73,8 +72,31 @@ export function AssignGroupDialog({
     }
   };
 
+  const stopKeyboardPropagation = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    event.stopPropagation();
+    event.nativeEvent.stopImmediatePropagation();
+  };
+
+  const handleModalKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+    if (event.key === "Escape" && !isBusy) {
+      event.preventDefault();
+      onClose();
+    }
+  };
+
+  const handleModalKeyUp = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    stopKeyboardPropagation(event);
+  };
+
   return (
-    <div className="grouptube-overlay" onClick={handleOverlayClick} role="presentation">
+    <div
+      className="grouptube-overlay"
+      onClick={handleOverlayClick}
+      onKeyDown={handleModalKeyDown}
+      onKeyUp={handleModalKeyUp}
+      role="presentation"
+    >
       <div
         className="grouptube-modal grouptube-assign-modal"
         role="dialog"
