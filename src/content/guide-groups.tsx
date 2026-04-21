@@ -1,3 +1,4 @@
+import { Group, Settings } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { STORAGE_KEYS } from "../shared/constants";
@@ -33,7 +34,13 @@ type GuideGroupsButtonProps = {
 function GuideGroupsButton({ onClick }: GuideGroupsButtonProps) {
   return (
     <button type="button" className="guide-groups-item" onClick={onClick}>
+      <span className="guide-groups-icon" aria-hidden="true">
+        <Group size={24} strokeWidth={2} />
+      </span>
       <span className="guide-groups-label">{t("groups")}</span>
+      <span className="guide-groups-settings" aria-hidden="true">
+        <Settings size={20} strokeWidth={2} />
+      </span>
     </button>
   );
 }

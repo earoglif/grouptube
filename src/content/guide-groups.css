@@ -50,12 +50,31 @@
 }
 
 .guide-groups-label {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: 1.6rem;
   line-height: 2.2rem;
   font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.guide-groups-settings {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  opacity: 0;
+  color: var(--yt-spec-text-secondary, #606060);
+  transition: opacity 0.14s ease-in-out;
+}
+
+.guide-groups-item:hover .guide-groups-settings,
+.guide-groups-item:focus-visible .guide-groups-settings {
+  opacity: 1;
 }
 
 .guide-groups-list {
