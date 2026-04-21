@@ -1,5 +1,5 @@
 import { handleYouTubeSpaLinkClick } from "../services/yt-navigation";
-import type { ChannelId, Subscription } from "../types";
+import type { ChannelId, Subscription } from "../../shared/types";
 
 type GuideSubscriptionItemProps = {
   subscription: Subscription;

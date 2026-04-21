@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import { HexColorPicker } from "react-colorful";
+import { Popover, PopoverContent, PopoverTrigger } from "../../components/ui/popover";
 import { ModalPortalContainerContext } from "../modal-portal-context";
-import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 type ShadcnColorPickerProps = {
   value: string;

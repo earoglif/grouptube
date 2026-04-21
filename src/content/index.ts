@@ -1,18 +1,14 @@
 import { storage } from "webextension-polyfill";
 import { getCurrentLanguage } from "../utils/getCurrentLanguage";
+import { STORAGE_KEYS } from "../shared/constants";
+import { normalizeLanguage } from "../shared/i18n/normalize";
 import { initGuideGroups } from "./guide-groups";
 import { ensurePageBridgeInjected } from "./services/page-bridge";
 import { initSubscribeAssign } from "./subscribe-assign";
 
-const POPUP_LANGUAGE_STORAGE_KEY = "popupLanguage";
-
-function normalizeLanguage(language: string): "ru" | "en" {
-  return language.toLowerCase().startsWith("ru") ? "ru" : "en";
-}
-
 async function persistPageLanguage(): Promise<void> {
   const normalizedLanguage = normalizeLanguage(getCurrentLanguage());
-  await storage.local.set({ [POPUP_LANGUAGE_STORAGE_KEY]: normalizedLanguage });
+  await storage.local.set({ [STORAGE_KEYS.popupLanguage]: normalizedLanguage });
 }
 
 function init(): void {

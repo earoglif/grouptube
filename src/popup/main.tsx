@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { ToastHost } from '../components/ui/toast'
 import './i18n'
 import './popup.css'
 import { PopupGreeting } from '../components/PopupGreeting'
@@ -12,6 +13,9 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <PopupGreeting />
+    <>
+      <PopupGreeting />
+      <ToastHost />
+    </>
   </StrictMode>,
 )

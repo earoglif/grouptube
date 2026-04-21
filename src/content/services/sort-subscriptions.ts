@@ -1,4 +1,4 @@
-import type { Subscription } from "../types";
+import type { Subscription } from "../../shared/types";
 import type { SubscriptionSortMode } from "./subscription-sort";
 
 const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });

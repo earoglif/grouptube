@@ -1,4 +1,4 @@
-import type { ChannelId, Group, GroupId, Subscription } from "../types";
+import type { ChannelId, Group, GroupId, Subscription } from "../../shared/types";
 
 type PromptChannel = {
   channelId: ChannelId;

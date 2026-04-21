@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { STORAGE_KEYS } from "../shared/constants";
 import styles from "./guide-groups.css?inline";
 import { GuideGroupItem } from "./components/GuideGroupItem";
 import { GuideSubscriptionList } from "./components/GuideSubscriptionList";
@@ -8,13 +9,16 @@ import { useChannelNewness } from "./hooks/useChannelNewness";
 import { useCollapsedGroupsPersistence } from "./hooks/useCollapsedGroups";
 import { useGroups } from "./hooks/useGroups";
 import { useSubscriptions } from "./hooks/useSubscriptions";
+import { ensureShadowMount } from "./mount";
 import { t } from "./i18n";
 import { sortSubscriptions } from "./services/sort-subscriptions";
 import { loadSubscriptionSort, type SubscriptionSortMode } from "./services/subscription-sort";
 
 const GROUPS_SECTION_ID = "grouptube-groups-section";
-const GUIDE_COLLAPSED_GROUPS_STORAGE_PREFIX = "grouptube_guide_collapsed_groups_";
-const GUIDE_SUBSCRIPTION_SORT_STORAGE_PREFIX = "grouptube_guide_subscription_sort_";
+const GROUPS_SECTION_STYLE_ID = "grouptube-groups-section-styles";
+const GROUPS_SECTION_ROOT_ID = "grouptube-groups-section-root";
+const GUIDE_COLLAPSED_GROUPS_STORAGE_PREFIX = STORAGE_KEYS.guideCollapsedPrefix;
+const GUIDE_SUBSCRIPTION_SORT_STORAGE_PREFIX = STORAGE_KEYS.guideSortPrefix;
 
 function getCurrentPathname(): string {
   if (typeof window === "undefined") return "/";
@@ -228,12 +232,12 @@ function injectGroupsSection(): boolean {
   container.className = "style-scope ytd-guide-renderer";
   sectionsContainer.insertBefore(container, subscriptionsSection);
 
-  const shadowRoot = container.attachShadow({ mode: "open" });
-  const styleElement = document.createElement("style");
-  styleElement.textContent = styles;
-
-  const reactContainer = document.createElement("div");
-  shadowRoot.append(styleElement, reactContainer);
+  const reactContainer = ensureShadowMount({
+    host: container,
+    styleId: GROUPS_SECTION_STYLE_ID,
+    rootId: GROUPS_SECTION_ROOT_ID,
+    styles,
+  });
 
   createRoot(reactContainer).render(<GuideGroupsSection />);
 
@@ -246,8 +250,18 @@ export function initGuideGroups(): void {
   const observer = new MutationObserver(() => {
     if (injectGroupsSection()) {
       observer.disconnect();
+      window.clearTimeout(observerTimeout);
     }
   });
+  const observerTarget = document.querySelector("ytd-app") ?? document.body;
+  const observerTimeout = window.setTimeout(() => {
+    observer.disconnect();
+  }, 30_000);
 
-  observer.observe(document.body, { childList: true, subtree: true });
+  observer.observe(observerTarget, { childList: true, subtree: true });
+  window.addEventListener("yt-navigate-finish", () => {
+    if (!document.getElementById(GROUPS_SECTION_ID)) {
+      injectGroupsSection();
+    }
+  });
 }

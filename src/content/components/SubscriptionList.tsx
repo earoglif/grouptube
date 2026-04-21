@@ -1,5 +1,5 @@
 import { useDndContext, useDroppable } from "@dnd-kit/core";
-import type { Subscription } from "../types";
+import type { Subscription } from "../../shared/types";
 import { SubscriptionItem } from "./SubscriptionItem";
 import { UNGROUPED_DROP_ID } from "./dnd";
 

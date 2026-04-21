@@ -1,4 +1,4 @@
-import type { ChannelId, Subscription } from "../types";
+import type { ChannelId, Subscription } from "../../shared/types";
 import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideSubscriptionListProps = {

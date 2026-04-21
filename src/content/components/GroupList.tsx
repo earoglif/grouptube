@@ -1,5 +1,5 @@
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import type { Group, Subscription } from "../types";
+import type { Group, Subscription } from "../../shared/types";
 import { type GroupFormLabels } from "./GroupForm";
 import { GroupCard, type GroupCardLabels } from "./GroupCard";
 import { getGroupDragId } from "./dnd";

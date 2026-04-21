@@ -1,4 +1,5 @@
-import type { ChannelId } from "../types";
+import type { ChannelId } from "../../shared/types";
+import { logger } from "../../shared/logger";
 import { PAGE_BRIDGE_EVENTS, ensurePageBridgeInjected } from "./page-bridge";
 
 export type SubscribedChannelInfo = {
@@ -96,21 +97,21 @@ function normalizeChannelIds(value: unknown): ChannelId[] {
 
 export function initSubscribeWatcher(onSubscribed: SubscribeWatcherCallback): () => void {
   ensurePageBridgeInjected();
-  console.log(`${DEBUG_PREFIX} init; listening event`, PAGE_BRIDGE_EVENTS.subscriptionSubscribe);
+  logger.debug(`${DEBUG_PREFIX} init; listening event`, PAGE_BRIDGE_EVENTS.subscriptionSubscribe);
 
   const handleSubscribeEvent = (event: Event) => {
     if (!(event instanceof CustomEvent)) return;
 
     const detail = event.detail as { channelIds?: unknown } | undefined;
     const channelIds = normalizeChannelIds(detail?.channelIds);
-    console.log(`${DEBUG_PREFIX} event received`, { detail, channelIds });
+    logger.debug(`${DEBUG_PREFIX} event received`, { detail, channelIds });
 
     const info = extractChannelInfo(channelIds[0]);
     if (!info) {
-      console.log(`${DEBUG_PREFIX} skip: extractChannelInfo failed`, { preferredChannelId: channelIds[0] });
+      logger.debug(`${DEBUG_PREFIX} skip: extractChannelInfo failed`, { preferredChannelId: channelIds[0] });
       return;
     }
-    console.log(`${DEBUG_PREFIX} onSubscribed`, info);
+    logger.debug(`${DEBUG_PREFIX} onSubscribed`, info);
     onSubscribed(info);
   };
 
@@ -123,7 +124,7 @@ export function initSubscribeWatcher(onSubscribed: SubscribeWatcherCallback): ()
 
 export function initUnsubscribeWatcher(onUnsubscribed: UnsubscribeWatcherCallback): () => void {
   ensurePageBridgeInjected();
-  console.log(`${DEBUG_PREFIX} init; listening event`, PAGE_BRIDGE_EVENTS.subscriptionUnsubscribe);
+  logger.debug(`${DEBUG_PREFIX} init; listening event`, PAGE_BRIDGE_EVENTS.subscriptionUnsubscribe);
 
   const handleUnsubscribeEvent = (event: Event) => {
     if (!(event instanceof CustomEvent)) return;

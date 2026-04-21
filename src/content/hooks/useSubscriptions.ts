@@ -1,33 +1,24 @@
-import { useCallback, useEffect, useState } from "react";
-import { getLastSubscriptions, requestSubscriptions, subscribeToSubscriptions } from "../services/subscriptions";
-import type { Subscription } from "../types";
-
-const LOAD_TIMEOUT_MS = 3000;
+import { useCallback, useEffect, useSyncExternalStore } from "react";
+import type { Subscription } from "../../shared/types";
+import {
+  getLastSubscriptions,
+  requestSubscriptions,
+  subscribeToSubscriptions,
+} from "../../shared/services/stores/subscriptions-store";
 
 export function useSubscriptions() {
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>(() => getLastSubscriptions());
-  const [isLoading, setIsLoading] = useState(subscriptions.length === 0);
+  const subscriptions = useSyncExternalStore(
+    (onChange) => subscribeToSubscriptions(() => onChange(), true),
+    () => getLastSubscriptions(),
+    () => getLastSubscriptions()
+  );
+  const isLoading = subscriptions.length === 0;
 
   useEffect(() => {
-    const unsubscribe = subscribeToSubscriptions((nextSubscriptions) => {
-      setSubscriptions(nextSubscriptions);
-      setIsLoading(false);
-    });
-
-    const timeoutId = window.setTimeout(() => {
-      setIsLoading(false);
-    }, LOAD_TIMEOUT_MS);
-
     requestSubscriptions();
-
-    return () => {
-      unsubscribe();
-      window.clearTimeout(timeoutId);
-    };
   }, []);
 
   const refresh = useCallback(() => {
-    setIsLoading(true);
     requestSubscriptions();
   }, []);
 

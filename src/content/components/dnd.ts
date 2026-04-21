@@ -1,4 +1,4 @@
-import type { ChannelId, GroupId } from "../types";
+import type { ChannelId, GroupId } from "../../shared/types";
 
 const GROUP_PREFIX = "group:";
 const SUBSCRIPTION_PREFIX = "subscription:";

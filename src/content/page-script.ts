@@ -1,11 +1,11 @@
-// @ts-nocheck
+import { PAGE_BRIDGE_EVENTS } from "../shared/page-bridge/events";
+import { logger } from "../shared/logger";
 
 const INSTALL_FLAG = "__grouptubePageBridgeInstalled__";
-
-const EVENT_USER_INFO = "grouptube:user-info";
-const EVENT_REQUEST_USER_INFO = "grouptube:request-user-info";
-const EVENT_SUBSCRIPTION_SUBSCRIBE = "grouptube:subscription-subscribe";
-const EVENT_SUBSCRIPTION_UNSUBSCRIBE = "grouptube:subscription-unsubscribe";
+const EVENT_USER_INFO = PAGE_BRIDGE_EVENTS.userInfo;
+const EVENT_REQUEST_USER_INFO = PAGE_BRIDGE_EVENTS.requestUserInfo;
+const EVENT_SUBSCRIPTION_SUBSCRIBE = PAGE_BRIDGE_EVENTS.subscriptionSubscribe;
+const EVENT_SUBSCRIPTION_UNSUBSCRIBE = PAGE_BRIDGE_EVENTS.subscriptionUnsubscribe;
 
 const SUBSCRIBE_URL_MARKER = "/youtubei/v1/subscription/subscribe";
 const UNSUBSCRIBE_URL_MARKER = "/youtubei/v1/subscription/unsubscribe";
@@ -13,9 +13,12 @@ const DEBUG_PREFIX = "[grouptube/page-script]";
 const CHANNEL_IDS_ARRAY_REGEX = /"channelIds"\s*:\s*\[(.*?)\]/s;
 const CHANNEL_ID_IN_ARRAY_REGEX = /"(UC[a-zA-Z0-9_-]{20,})"/g;
 const SINGLE_CHANNEL_ID_REGEX = /"channelId"\s*:\s*"(UC[a-zA-Z0-9_-]{20,})"/;
+type SubscribeRequestInput = Parameters<typeof fetch>[0];
+type SubscribeRequestInit = Parameters<typeof fetch>[1];
+type XhrWithSubscribeUrl = XMLHttpRequest & { __grouptubeSubscribeUrl?: string };
 
 function getYtData() {
-  const ytcfg = window.ytcfg;
+  const ytcfg = (window as Window & { ytcfg?: { data_?: Record<string, unknown> } }).ytcfg;
   if (typeof ytcfg !== "object" || ytcfg === null) return {};
 
   const data = ytcfg.data_;
@@ -34,10 +37,10 @@ function emitUserInfo() {
   window.dispatchEvent(new CustomEvent(EVENT_USER_INFO, { detail: { userId } }));
 }
 
-function uniqueStringArray(items) {
+function uniqueStringArray(items: unknown): string[] {
   if (!Array.isArray(items)) return [];
-  const normalized = [];
-  const seen = new Set();
+  const normalized: string[] = [];
+  const seen = new Set<string>();
   for (const item of items) {
     if (typeof item !== "string") continue;
     const value = item.trim();
@@ -49,7 +52,7 @@ function uniqueStringArray(items) {
   return normalized;
 }
 
-function maybeJsonParse(value) {
+function maybeJsonParse(value: unknown): unknown {
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   if (!trimmed) return null;
@@ -60,19 +63,20 @@ function maybeJsonParse(value) {
   }
 }
 
-function parseChannelIdsFromRawText(raw) {
+function parseChannelIdsFromRawText(raw: unknown): string[] {
   if (typeof raw !== "string" || raw.length === 0) return [];
 
   const parsed = maybeJsonParse(raw);
   if (parsed && typeof parsed === "object") {
-    const direct = uniqueStringArray(parsed.channelIds || parsed.channelIdsList);
+    const parsedRecord = parsed as Record<string, unknown>;
+    const direct = uniqueStringArray(parsedRecord.channelIds ?? parsedRecord.channelIdsList);
     if (direct.length > 0) return direct;
   }
 
   const arrayMatch = raw.match(CHANNEL_IDS_ARRAY_REGEX);
   if (arrayMatch) {
-    const ids = [];
-    let match;
+    const ids: string[] = [];
+    let match: RegExpExecArray | null;
     CHANNEL_ID_IN_ARRAY_REGEX.lastIndex = 0;
     while ((match = CHANNEL_ID_IN_ARRAY_REGEX.exec(arrayMatch[1])) !== null) {
       ids.push(match[1]);
@@ -87,7 +91,7 @@ function parseChannelIdsFromRawText(raw) {
   return [];
 }
 
-function parseSubscribeBody(body) {
+function parseSubscribeBody(body: unknown): string[] {
   if (!body) return [];
 
   if (typeof body === "string") {
@@ -154,7 +158,8 @@ function parseSubscribeBody(body) {
   }
 
   if (typeof body === "object") {
-    const direct = uniqueStringArray(body.channelIds || body.channelIdsList);
+    const bodyRecord = body as Record<string, unknown>;
+    const direct = uniqueStringArray(bodyRecord.channelIds ?? bodyRecord.channelIdsList);
     if (direct.length > 0) return direct;
     try {
       return parseChannelIdsFromRawText(JSON.stringify(body));
@@ -166,7 +171,10 @@ function parseSubscribeBody(body) {
   return [];
 }
 
-async function parseSubscribeBodyFromRequest(input, init) {
+async function parseSubscribeBodyFromRequest(
+  input: SubscribeRequestInput,
+  init?: SubscribeRequestInit
+): Promise<string[]> {
   const directBody = init && init.body !== undefined ? init.body : undefined;
   const fromDirectBody = parseSubscribeBody(directBody);
   if (fromDirectBody.length > 0) return fromDirectBody;
@@ -177,7 +185,7 @@ async function parseSubscribeBodyFromRequest(input, init) {
       const fromBlob = parseChannelIdsFromRawText(text);
       if (fromBlob.length > 0) return fromBlob;
     } catch (error) {
-      console.log(`${DEBUG_PREFIX} init.body Blob.text() failed`, { error });
+      logger.debug(`${DEBUG_PREFIX} init.body Blob.text() failed`, { error });
     }
   }
 
@@ -187,7 +195,7 @@ async function parseSubscribeBodyFromRequest(input, init) {
       const fromText = parseChannelIdsFromRawText(text);
       if (fromText.length > 0) return fromText;
     } catch (error) {
-      console.log(`${DEBUG_PREFIX} request.clone().text() failed`, { error });
+      logger.debug(`${DEBUG_PREFIX} request.clone().text() failed`, { error });
     }
   }
 
@@ -198,19 +206,23 @@ async function parseSubscribeBodyFromRequest(input, init) {
   return [];
 }
 
-function emitSubscriptionEvent(eventName, channelIds) {
+function emitSubscriptionEvent(eventName: string, channelIds: string[]): void {
   const normalizedChannelIds = Array.isArray(channelIds) ? channelIds : [];
-  console.log(`${DEBUG_PREFIX} emit subscription event`, { eventName, channelIds: normalizedChannelIds });
+  logger.debug(`${DEBUG_PREFIX} emit subscription event`, { eventName, channelIds: normalizedChannelIds });
   window.dispatchEvent(
     new CustomEvent(eventName, { detail: { channelIds: normalizedChannelIds } })
   );
 }
 
 function installSubscribeRequestBridge() {
-  console.log(`${DEBUG_PREFIX} install subscribe bridge`);
+  logger.debug(`${DEBUG_PREFIX} install subscribe bridge`);
   const originalFetch = window.fetch;
   if (typeof originalFetch === "function") {
-    window.fetch = function patchedFetch(input, init) {
+    window.fetch = function patchedFetch(
+      this: WindowOrWorkerGlobalScope,
+      input: SubscribeRequestInput,
+      init?: SubscribeRequestInit
+    ) {
       try {
         const url =
           typeof input === "string"
@@ -222,10 +234,10 @@ function installSubscribeRequestBridge() {
           const eventName = url.includes(UNSUBSCRIBE_URL_MARKER)
             ? EVENT_SUBSCRIPTION_UNSUBSCRIBE
             : EVENT_SUBSCRIPTION_SUBSCRIBE;
-          console.log(`${DEBUG_PREFIX} fetch subscription match`, { url, eventName });
+          logger.debug(`${DEBUG_PREFIX} fetch subscription match`, { url, eventName });
           void parseSubscribeBodyFromRequest(input, init).then((channelIds) => {
             const body = init && init.body !== undefined ? init.body : undefined;
-            console.log(`${DEBUG_PREFIX} fetch parsed channelIds`, {
+            logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
               channelIds,
               bodyType: typeof body,
               inputType: input instanceof Request ? "Request" : typeof input,
@@ -235,47 +247,66 @@ function installSubscribeRequestBridge() {
         }
       } catch {}
 
-      return originalFetch.apply(this, arguments);
+      return originalFetch.call(this, input, init);
     };
   }
 
   const originalOpen = XMLHttpRequest.prototype.open;
   const originalSend = XMLHttpRequest.prototype.send;
 
-  XMLHttpRequest.prototype.open = function patchedOpen(method, url) {
+  XMLHttpRequest.prototype.open = function patchedOpen(
+    this: XMLHttpRequest,
+    method: string,
+    url: string | URL,
+    async?: boolean,
+    username?: string | null,
+    password?: string | null
+  ) {
+    const xhr = this as XhrWithSubscribeUrl;
     try {
-      this.__grouptubeSubscribeUrl = typeof url === "string" ? url : "";
+      xhr.__grouptubeSubscribeUrl = typeof url === "string" ? url : "";
       if (
-        typeof this.__grouptubeSubscribeUrl === "string" &&
-        (this.__grouptubeSubscribeUrl.includes(SUBSCRIBE_URL_MARKER) ||
-          this.__grouptubeSubscribeUrl.includes(UNSUBSCRIBE_URL_MARKER))
+        typeof xhr.__grouptubeSubscribeUrl === "string" &&
+        (xhr.__grouptubeSubscribeUrl.includes(SUBSCRIBE_URL_MARKER) ||
+          xhr.__grouptubeSubscribeUrl.includes(UNSUBSCRIBE_URL_MARKER))
       ) {
-        console.log(`${DEBUG_PREFIX} xhr subscription open`, { method, url: this.__grouptubeSubscribeUrl });
+        logger.debug(`${DEBUG_PREFIX} xhr subscription open`, { method, url: xhr.__grouptubeSubscribeUrl });
       }
     } catch {}
-    return originalOpen.apply(this, arguments);
+
+    if (typeof async === "boolean" || username !== undefined || password !== undefined) {
+      return originalOpen.call(this, method, url, async ?? true, username, password);
+    }
+
+    return originalOpen.call(this, method, url, true);
   };
 
-  XMLHttpRequest.prototype.send = function patchedSend(body) {
+  XMLHttpRequest.prototype.send = function patchedSend(
+    this: XMLHttpRequest,
+    ...args: Parameters<XMLHttpRequest["send"]>
+  ) {
+    const [body] = args;
+    const xhr = this as XhrWithSubscribeUrl;
     try {
-      const url = this.__grouptubeSubscribeUrl || "";
+      const url = xhr.__grouptubeSubscribeUrl || "";
       if (typeof url === "string" && (url.includes(SUBSCRIBE_URL_MARKER) || url.includes(UNSUBSCRIBE_URL_MARKER))) {
         const eventName = url.includes(UNSUBSCRIBE_URL_MARKER)
           ? EVENT_SUBSCRIPTION_UNSUBSCRIBE
           : EVENT_SUBSCRIPTION_SUBSCRIBE;
         const channelIds = parseSubscribeBody(body);
-        console.log(`${DEBUG_PREFIX} xhr parsed channelIds`, { channelIds, bodyType: typeof body });
+        logger.debug(`${DEBUG_PREFIX} xhr parsed channelIds`, { channelIds, bodyType: typeof body });
         emitSubscriptionEvent(eventName, channelIds);
       }
     } catch {}
-    return originalSend.apply(this, arguments);
+    return originalSend.apply(this, args);
   };
 }
 
 function init() {
-  if (window[INSTALL_FLAG]) return;
-  window[INSTALL_FLAG] = true;
-  console.log(`${DEBUG_PREFIX} init`);
+  const scopedWindow = window as unknown as Record<string, unknown>;
+  if (scopedWindow[INSTALL_FLAG]) return;
+  scopedWindow[INSTALL_FLAG] = true;
+  logger.debug(`${DEBUG_PREFIX} init`);
 
   window.addEventListener(EVENT_REQUEST_USER_INFO, () => {
     emitUserInfo();

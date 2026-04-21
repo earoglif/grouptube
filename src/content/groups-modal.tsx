@@ -1,8 +1,11 @@
 import { type ChangeEvent, type MouseEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ToastHost } from "../components/ui/toast";
+import { notify } from "../shared/services/notifications";
 import modalStyles from "./groups-modal.css?inline";
 import { ModalBody, type ModalBodyHandle, type ModalBodyLabels } from "./components/ModalBody";
 import { ModalHeader } from "./components/ModalHeader";
+import { ensureShadowMount } from "./mount";
 import { ModalPortalContainerContext } from "./modal-portal-context";
 import { useSubscriptions } from "./hooks/useSubscriptions";
 import { exportGroups, importGroups } from "../popup/services/export-import";
@@ -50,6 +53,7 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
     void exportGroups()
       .catch((error: unknown) => {
         console.error("Failed to export groups", error);
+        notify.error(`${labels.exportLabel}: failed`);
       })
       .finally(() => {
         setIsImportExportBusy(false);
@@ -79,6 +83,7 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
       })
       .catch((error: unknown) => {
         console.error("Failed to import groups", error);
+        notify.error(`${labels.importLabel}: failed`);
       })
       .finally(() => {
         setIsImportExportBusy(false);
@@ -118,6 +123,7 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
             subscriptions={subscriptions}
             isSubscriptionsLoading={isSubscriptionsLoading}
           />
+          <ToastHost />
         </div>
       </div>
     </ModalPortalContainerContext.Provider>,
@@ -133,24 +139,12 @@ function ensureModalRoot(): HTMLElement {
     document.body.append(host);
   }
 
-  const shadowRoot = host.shadowRoot ?? host.attachShadow({ mode: "open" });
-
-  let styleElement = shadowRoot.getElementById(MODAL_STYLE_ID);
-  if (!styleElement) {
-    styleElement = document.createElement("style");
-    styleElement.id = MODAL_STYLE_ID;
-    styleElement.textContent = modalStyles;
-    shadowRoot.append(styleElement);
-  }
-
-  let modalRoot = shadowRoot.getElementById(MODAL_ROOT_ID);
-  if (!modalRoot) {
-    modalRoot = document.createElement("div");
-    modalRoot.id = MODAL_ROOT_ID;
-    shadowRoot.append(modalRoot);
-  }
-
-  return modalRoot;
+  return ensureShadowMount({
+    host,
+    styleId: MODAL_STYLE_ID,
+    rootId: MODAL_ROOT_ID,
+    styles: modalStyles,
+  });
 }
 
 export function GroupsModal({ isOpen, title, labels, onClose }: GroupsModalProps) {

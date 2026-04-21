@@ -1,6 +1,6 @@
 import { type MouseEvent, useEffect, useState } from "react";
 import { DiamondPlus } from "lucide-react";
-import type { Group, GroupId } from "../types";
+import type { Group, GroupId } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
 import type { SubscribedChannelInfo } from "../services/subscribe-watcher";
 

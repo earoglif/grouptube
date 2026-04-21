@@ -1,4 +1,4 @@
-import type { ChannelId, Group } from "../content/types";
+import type { ChannelId, Group } from "./types";
 
 export const DEFAULT_GROUP_COLOR = "#3ea6ff";
 

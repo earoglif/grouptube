@@ -1,6 +1,6 @@
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import type { GroupId, Subscription } from "../types";
+import type { GroupId, Subscription } from "../../shared/types";
 import { type SubscriptionDragData, getSubscriptionDragId } from "./dnd";
 
 type SubscriptionItemProps = {

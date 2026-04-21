@@ -1,5 +1,5 @@
 import { identity } from "webextension-polyfill";
-import type { ChannelId, Subscription } from "../content/types";
+import type { ChannelId, Subscription } from "../shared/types";
 
 const YOUTUBE_SUBSCRIPTIONS_URL = "https://www.googleapis.com/youtube/v3/subscriptions";
 const YOUTUBE_PLAYLIST_ITEMS_URL = "https://www.googleapis.com/youtube/v3/playlistItems";

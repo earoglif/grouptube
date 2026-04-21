@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { logger } from "../shared/logger";
+import { notify } from "../shared/services/notifications";
 import modalStyles from "./groups-modal.css?inline";
+import { ensureShadowMount } from "./mount";
 import { AssignGroupDialog } from "./components/AssignGroupDialog";
 import { useGroups } from "./hooks/useGroups";
 import { t } from "./i18n";
@@ -12,23 +15,16 @@ import {
 } from "./services/subscribe-watcher";
 
 const ROOT_HOST_ID = "grouptube-subscribe-assign-host";
-const STYLE_ELEMENT_ID = "grouptube-subscribe-assign-styles";
+const STYLE_ELEMENT_ID = "grouptube-subscribe-assign-shadow-styles";
+const ROOT_ELEMENT_ID = "grouptube-subscribe-assign-shadow-root";
 const DEBUG_PREFIX = "[grouptube/subscribe-assign]";
-
-function ensureStylesInjected(): void {
-  if (document.getElementById(STYLE_ELEMENT_ID)) return;
-  const styleElement = document.createElement("style");
-  styleElement.id = STYLE_ELEMENT_ID;
-  styleElement.textContent = modalStyles;
-  document.head.append(styleElement);
-}
 
 function SubscribeAssignRoot() {
   const [pendingChannel, setPendingChannel] = useState<SubscribedChannelInfo | null>(null);
-  const { groups, assignChannelToGroup, createGroupAndAssignChannel } = useGroups();
+  const { groups, assignChannelToGroup, assignChannelsToGroup, createGroupAndAssignChannel } = useGroups();
 
   useEffect(() => {
-    console.log(`${DEBUG_PREFIX} mount; initSubscribeWatcher`);
+    logger.debug(`${DEBUG_PREFIX} mount; initSubscribeWatcher`);
     const stopSubscribe = initSubscribeWatcher((info) => {
       const fallbackInfo: SubscribedChannelInfo = {
         channelId: info.channelId,
@@ -51,24 +47,23 @@ function SubscribeAssignRoot() {
             name: resolved.name,
             thumbnailUrl: resolved.thumbnailUrl,
           });
-          console.log(`${DEBUG_PREFIX} set pending channel`, resolved);
+          logger.debug(`${DEBUG_PREFIX} set pending channel`, resolved);
           setPendingChannel(resolved);
         })
         .catch(() => {
+          notify.error("Failed to fetch channel details");
           upsertSubscription({
             channelId: fallbackInfo.channelId,
             name: fallbackInfo.name,
             thumbnailUrl: fallbackInfo.thumbnailUrl,
           });
-          console.log(`${DEBUG_PREFIX} set pending channel (fallback)`, fallbackInfo);
+          logger.debug(`${DEBUG_PREFIX} set pending channel (fallback)`, fallbackInfo);
           setPendingChannel(fallbackInfo);
         });
     });
     const stopUnsubscribe = initUnsubscribeWatcher((channelIds) => {
       removeSubscriptions(channelIds);
-      for (const channelId of channelIds) {
-        void assignChannelToGroup(channelId, null);
-      }
+      void assignChannelsToGroup(channelIds, null);
       setPendingChannel((current) =>
         current && channelIds.includes(current.channelId) ? null : current
       );
@@ -77,7 +72,7 @@ function SubscribeAssignRoot() {
       stopSubscribe();
       stopUnsubscribe();
     };
-  }, [assignChannelToGroup]);
+  }, [assignChannelToGroup, assignChannelsToGroup]);
 
   if (!pendingChannel) return null;
 
@@ -120,16 +115,20 @@ function SubscribeAssignRoot() {
 
 export function initSubscribeAssign(): void {
   if (document.getElementById(ROOT_HOST_ID)) {
-    console.log(`${DEBUG_PREFIX} already initialized`);
+    logger.debug(`${DEBUG_PREFIX} already initialized`);
     return;
   }
-
-  ensureStylesInjected();
 
   const host = document.createElement("div");
   host.id = ROOT_HOST_ID;
   document.body.append(host);
+  const mountRoot = ensureShadowMount({
+    host,
+    styleId: STYLE_ELEMENT_ID,
+    rootId: ROOT_ELEMENT_ID,
+    styles: modalStyles,
+  });
 
-  console.log(`${DEBUG_PREFIX} create react root`);
-  createRoot(host).render(<SubscribeAssignRoot />);
+  logger.debug(`${DEBUG_PREFIX} create react root`);
+  createRoot(mountRoot).render(<SubscribeAssignRoot />);
 }

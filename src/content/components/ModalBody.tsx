@@ -1,16 +1,4 @@
 import {
-  DndContext,
-  PointerSensor,
-  closestCenter,
-  pointerWithin,
-  type CollisionDetection,
-  type DragEndEvent,
-  type Modifier,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import { arrayMove } from "@dnd-kit/sortable";
-import {
   ArrowDownUp,
   DiamondPlus,
   ListChevronsDownUp,
@@ -20,15 +8,15 @@ import {
 import { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from "react";
 import { useCollapsedGroupsPersistence } from "../hooks/useCollapsedGroups";
 import { useGroups } from "../hooks/useGroups";
+import { useGroupsDnd } from "../modal/hooks/useGroupsDnd";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { isSubscriptionSortMode, sortSubscriptions } from "../services/sort-subscriptions";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
-import type { Subscription } from "../types";
+import type { Subscription } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
 import { GroupingPromptDialog } from "./GroupingPromptDialog";
 import { GroupList } from "./GroupList";
 import { SubscriptionList } from "./SubscriptionList";
-import { UNGROUPED_DROP_ID, parseGroupId, parseSubscriptionChannelId } from "./dnd";
 
 export type ModalBodyLabels = {
   newGroupLabel: string;
@@ -75,32 +63,6 @@ export type ModalBodyHandle = {
   openGroupingPrompt: () => void;
 };
 
-const restrictToVerticalAxis: Modifier = ({ transform }) => ({
-  ...transform,
-  x: 0,
-});
-
-const pointerThenClosestCenter: CollisionDetection = (args) => {
-  const pointerCollisions = pointerWithin(args);
-  if (pointerCollisions.length > 0) return pointerCollisions;
-  return closestCenter(args);
-};
-
-function resolveDropTargetGroupId(
-  overId: unknown,
-  overData: { kind?: string; groupId?: string | null } | undefined
-): string | null | undefined {
-  if (overId === UNGROUPED_DROP_ID) return null;
-
-  const parsedGroupId = parseGroupId(overId);
-  if (parsedGroupId) return parsedGroupId;
-
-  if (overData?.kind === "group" && overData.groupId) return overData.groupId;
-  if (overData?.kind === "subscription") return overData.groupId ?? null;
-
-  return undefined;
-}
-
 export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function ModalBody(
   { labels, subscriptions, isSubscriptionsLoading },
   ref
@@ -130,11 +92,17 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
 
   const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(userId);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 6 },
-    })
-  );
+  const {
+    DndContext,
+    sensors,
+    collisionDetection,
+    modifiers,
+    handleDragEnd,
+  } = useGroupsDnd({
+    groups,
+    reorderGroups,
+    assignChannelToGroup,
+  });
 
   useEffect(() => {
     let isCancelled = false;
@@ -196,39 +164,6 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
   const handleSortModeChange = (nextSortMode: SubscriptionSortMode) => {
     setSortMode(nextSortMode);
     void saveSubscriptionSort(userId, nextSortMode);
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeData = active.data.current as { kind?: string; groupId?: string | null; channelId?: string } | undefined;
-    const overData = over.data.current as { kind?: string; groupId?: string | null } | undefined;
-
-    if (activeData?.kind === "group") {
-      const activeGroupId = parseGroupId(active.id);
-      const overGroupId = parseGroupId(over.id);
-      if (!activeGroupId || !overGroupId || activeGroupId === overGroupId) return;
-
-      const oldIndex = groups.findIndex((group) => group.id === activeGroupId);
-      const newIndex = groups.findIndex((group) => group.id === overGroupId);
-      if (oldIndex < 0 || newIndex < 0) return;
-
-      const orderedGroupIds = arrayMove(groups, oldIndex, newIndex).map((group) => group.id);
-      void reorderGroups(orderedGroupIds);
-      return;
-    }
-
-    if (activeData?.kind === "subscription") {
-      const channelId = parseSubscriptionChannelId(active.id) ?? activeData.channelId;
-      if (!channelId) return;
-
-      const targetGroupId = resolveDropTargetGroupId(over.id, overData);
-      if (targetGroupId === undefined) return;
-      if ((activeData.groupId ?? null) === targetGroupId) return;
-
-      void assignChannelToGroup(channelId, targetGroupId);
-    }
   };
 
   const isLoading = isGroupsLoading || isSubscriptionsLoading;
@@ -329,8 +264,8 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
 
       <DndContext
         sensors={sensors}
-        collisionDetection={pointerThenClosestCenter}
-        modifiers={[restrictToVerticalAxis]}
+        collisionDetection={collisionDetection}
+        modifiers={modifiers}
         onDragEnd={handleDragEnd}
       >
         <div className="grouptube-modal-dnd">

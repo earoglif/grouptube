@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { notify } from "../../shared/services/notifications";
 import { markChannelSeen, requestChannelNewness } from "../services/newness";
-import type { ChannelId, Subscription } from "../types";
+import type { ChannelId, Subscription } from "../../shared/types";
 
 type UseChannelNewnessResult = {
   newnessMap: Map<ChannelId, boolean>;
@@ -27,6 +28,7 @@ export function useChannelNewness(subscriptions: Subscription[]): UseChannelNewn
       })
       .catch((error: unknown) => {
         console.error("Failed to load channel newness", error);
+        notify.error("Failed to load channel updates");
       });
 
     return () => {
@@ -44,6 +46,7 @@ export function useChannelNewness(subscriptions: Subscription[]): UseChannelNewn
 
     void markChannelSeen(channelId).catch((error: unknown) => {
       console.error("Failed to mark channel seen", error);
+      notify.error("Failed to update channel state");
     });
   }, []);
 

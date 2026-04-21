@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import type { ChannelId, Group, Subscription } from "../types";
+import type { ChannelId, Group, Subscription } from "../../shared/types";
 import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideGroupItemLabels = {

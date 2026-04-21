@@ -3,7 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Group, Subscription } from "../types";
+import type { Group, Subscription } from "../../shared/types";
 import { GroupForm, type GroupFormLabels } from "./GroupForm";
 import { SubscriptionItem } from "./SubscriptionItem";
 import { type GroupDragData, getGroupDragId } from "./dnd";
