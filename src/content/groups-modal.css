@@ -70,7 +70,8 @@
 }
 
 .grouptube-icon-button:hover {
-  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.08));
+  background: var(--yt-spec-additive-background);
+  outline: none;
 }
 
 .grouptube-icon-button:disabled {
