@@ -37,8 +37,6 @@ export function createManifest(googleClientId: string) {
       scopes: ['https://www.googleapis.com/auth/youtube.readonly'],
     },
     host_permissions: ['https://www.youtube.com/*', 'https://www.googleapis.com/*'],
-    action: {
-      default_popup: 'src/popup/index.html',
-    },
+    action: {},
   })
 }

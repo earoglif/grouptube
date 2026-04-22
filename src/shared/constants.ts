@@ -1,6 +1,5 @@
 export const STORAGE_KEYS = {
   userId: "grouptube_userId",
-  popupLanguage: "popupLanguage",
   groupsPrefix: "grouptube_groups_",
   collapsedGroupsPrefix: "grouptube_collapsed_groups_",
   subscriptionSortPrefix: "grouptube_subscription_sort_",

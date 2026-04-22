@@ -5,7 +5,7 @@
   "tsx": true,
   "tailwind": {
     "config": "",
-    "css": "src/popup/popup.css",
+    "css": "src/styles/tailwind-shadcn.css",
     "baseColor": "zinc",
     "cssVariables": true,
     "prefix": ""

@@ -8,7 +8,7 @@ import { ModalHeader } from "./components/ModalHeader";
 import { ensureShadowMount } from "./mount";
 import { ModalPortalContainerContext } from "./modal-portal-context";
 import { useSubscriptions } from "./hooks/useSubscriptions";
-import { exportGroups, importGroups } from "../popup/services/export-import";
+import { exportGroups, importGroups } from "../shared/services/import-export";
 
 const MODAL_TITLE_ID = "grouptube-manage-groups-modal-title";
 const MODAL_HOST_ID = "grouptube-modal-host";
