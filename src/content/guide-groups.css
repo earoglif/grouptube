@@ -1,8 +1,14 @@
 :host {
+  --grouptube-guide-hover-bg: var(--yt-spec-additive-background, rgba(0, 0, 0, 0.08));
   display: block;
   width: 100%;
   font-family: "Roboto", "Arial", sans-serif;
   color: var(--yt-spec-text-primary, #0f0f0f);
+}
+
+:host-context([dark]) {
+  --grouptube-guide-hover-bg: var(--yt-spec-additive-background, rgba(255, 255, 255, 0.12));
+  color: var(--yt-spec-text-primary, #f1f1f1);
 }
 
 .guide-groups-container {
@@ -28,7 +34,7 @@
   justify-content: flex-start;
   gap: 24px;
   text-align: left;
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  color: inherit;
   box-sizing: border-box;
   font: inherit;
   transition: background-color 0.14s ease-in-out;
@@ -36,7 +42,7 @@
 
 .guide-groups-item:hover,
 .guide-groups-item:focus-visible {
-  background: var(--yt-spec-additive-background);
+  background: var(--grouptube-guide-hover-bg);
   outline: none;
 }
 
@@ -97,7 +103,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  color: inherit;
   text-align: left;
   box-sizing: border-box;
   font: inherit;
@@ -105,7 +111,7 @@
 
 .guide-group-header:hover,
 .guide-group-header:focus-visible {
-  background: var(--yt-spec-additive-background);
+  background: var(--grouptube-guide-hover-bg);
   outline: none;
 }
 
@@ -153,21 +159,21 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  color: inherit;
   text-decoration: none;
   box-sizing: border-box;
 }
 
 .guide-sub-item:hover,
 .guide-sub-item:focus-visible {
-  background: var(--yt-spec-additive-background);
+  background: var(--grouptube-guide-hover-bg);
   outline: none;
 }
 
 .guide-sub-item.is-active,
 .guide-sub-item.is-active:hover,
 .guide-sub-item.is-active:focus-visible {
-  background: var(--yt-spec-additive-background);
+  background: var(--grouptube-guide-hover-bg);
   outline: none;
 }
 

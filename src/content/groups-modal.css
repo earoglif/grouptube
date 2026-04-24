@@ -1,3 +1,25 @@
+:host {
+  --grouptube-surface: var(--yt-spec-base-background, #ffffff);
+  --grouptube-text: var(--yt-spec-text-primary, #0f0f0f);
+  --grouptube-muted-text: var(--yt-spec-text-secondary, #606060);
+  --grouptube-border: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  --grouptube-input-border: var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
+  --grouptube-chip-bg: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.08));
+  --grouptube-hover-bg: var(--yt-spec-additive-background, rgba(0, 0, 0, 0.08));
+}
+
+:host-context([dark]),
+:host-context(html[dark]),
+:host-context(ytd-app[dark]) {
+  --grouptube-surface: #212121;
+  --grouptube-text: #f1f1f1;
+  --grouptube-muted-text: #aaaaaa;
+  --grouptube-border: rgba(255, 255, 255, 0.2);
+  --grouptube-input-border: rgba(255, 255, 255, 0.22);
+  --grouptube-chip-bg: rgba(255, 255, 255, 0.12);
+  --grouptube-hover-bg: rgba(255, 255, 255, 0.12);
+}
+
 .grouptube-overlay {
   position: fixed;
   inset: 0;
@@ -22,9 +44,9 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: 14px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
-  background: var(--yt-spec-base-background, #ffffff);
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  border: 1px solid var(--grouptube-border);
+  background: var(--grouptube-surface);
+  color: var(--grouptube-text);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.32);
 }
 
@@ -36,8 +58,8 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  background: var(--yt-spec-base-background, #ffffff);
-  border-bottom: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  background: var(--grouptube-surface);
+  border-bottom: 1px solid var(--grouptube-border);
 }
 
 .grouptube-modal-title {
@@ -70,7 +92,7 @@
 }
 
 .grouptube-icon-button:hover {
-  background: var(--yt-spec-additive-background);
+  background: var(--grouptube-hover-bg);
   outline: none;
 }
 
@@ -114,7 +136,7 @@
   display: inline-block;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
+  border: 1px solid var(--grouptube-input-border);
   cursor: pointer;
   overflow: hidden;
   padding-right: 0.5rem;
@@ -132,7 +154,7 @@
   z-index: 1;
   display: inline-flex;
   align-items: center;
-  color: var(--yt-spec-text-secondary, #606060);
+  color: var(--grouptube-muted-text);
   pointer-events: none;
 }
 
@@ -151,8 +173,8 @@
   padding: 0 32px 0 36px;
   border: none;
   border-radius: 0;
-  background: var(--yt-spec-base-background, #ffffff);
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  background: var(--grouptube-surface);
+  color: var(--grouptube-text);
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
@@ -188,8 +210,8 @@
   border: none;
   border-radius: 999px;
   padding: 0 14px;
-  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.08));
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  background: var(--grouptube-chip-bg);
+  color: var(--grouptube-text);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
@@ -198,6 +220,14 @@
 .grouptube-button.is-primary {
   background: #065fd4;
   color: #ffffff;
+}
+
+.grouptube-button:hover:not(:disabled) {
+  background: var(--grouptube-hover-bg);
+}
+
+.grouptube-button.is-primary:hover:not(:disabled) {
+  background: #0b57c3;
 }
 
 .grouptube-new-group-button {
@@ -221,8 +251,8 @@
   gap: 10px;
   padding: 12px;
   border-radius: 12px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
-  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--grouptube-border);
+  background: var(--grouptube-chip-bg);
 }
 
 :host-context([dark]) .grouptube-group-form {
@@ -234,9 +264,9 @@
   height: 36px;
   padding: 0 10px;
   border-radius: 8px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
-  background: var(--yt-spec-base-background, #ffffff);
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  border: 1px solid var(--grouptube-input-border);
+  background: var(--grouptube-surface);
+  color: var(--grouptube-text);
   font-size: 14px;
 }
 
@@ -266,7 +296,7 @@
   height: 36px;
   padding: 0;
   border-radius: 8px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
+  border: 1px solid var(--grouptube-input-border);
   cursor: pointer;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
@@ -291,8 +321,8 @@
   padding: 12px;
   overflow: hidden;
   border-radius: 10px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
-  background: var(--yt-spec-base-background, #ffffff);
+  border: 1px solid var(--grouptube-border);
+  background: var(--grouptube-surface);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
 }
 
@@ -441,9 +471,9 @@
 }
 
 .grouptube-group-card {
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  border: 1px solid var(--grouptube-border);
   border-radius: 12px;
-  background: var(--yt-spec-base-background, #ffffff);
+  background: var(--grouptube-surface);
 }
 
 :host-context([dark]) .grouptube-group-card {
@@ -469,7 +499,7 @@
 }
 
 .grouptube-group-header:hover {
-  background: var(--yt-spec-additive-background, #f2f2f2);
+  background: var(--grouptube-hover-bg);
 }
 
 .grouptube-group-title-wrap {
@@ -486,7 +516,7 @@
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--yt-spec-text-secondary, #606060);
+  color: var(--grouptube-muted-text);
   font-size: 16px;
   cursor: grab;
 }
@@ -539,7 +569,7 @@
 
 .grouptube-empty-text {
   margin: 6px 0 4px;
-  color: var(--yt-spec-text-secondary, #606060);
+  color: var(--grouptube-muted-text);
   font-size: 13px;
 }
 
@@ -599,7 +629,7 @@
 }
 
 .grouptube-subscription-link:hover {
-  background: var(--yt-spec-additive-background, #f2f2f2);
+  background: var(--grouptube-hover-bg);
 }
 
 .grouptube-subscription-avatar-wrap {
@@ -644,7 +674,7 @@
   gap: 12px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: var(--yt-spec-badge-chip-background, rgba(0, 0, 0, 0.04));
+  background: var(--grouptube-chip-bg);
 }
 
 .grouptube-assign-channel-avatar {
@@ -676,7 +706,7 @@
 .grouptube-assign-description {
   flex-shrink: 0;
   margin: 0;
-  color: var(--yt-spec-text-secondary, #606060);
+  color: var(--grouptube-muted-text);
   font-size: 13px;
 }
 
@@ -694,9 +724,9 @@
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  border: 1px solid var(--grouptube-border);
   border-radius: 10px;
-  background: var(--yt-spec-base-background, #ffffff);
+  background: var(--grouptube-surface);
   color: inherit;
   font-size: 14px;
   text-align: left;
@@ -708,7 +738,7 @@
 }
 
 .grouptube-assign-group-item:hover {
-  background: var(--yt-spec-additive-background, #f2f2f2);
+  background: var(--grouptube-hover-bg);
 }
 
 .grouptube-assign-group-item:disabled {
@@ -770,9 +800,9 @@
   display: flex;
   flex-direction: column;
   border-radius: 14px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
-  background: var(--yt-spec-base-background, #ffffff);
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  border: 1px solid var(--grouptube-border);
+  background: var(--grouptube-surface);
+  color: var(--grouptube-text);
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.32);
 }
 
@@ -782,7 +812,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 16px 20px;
-  border-bottom: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.14));
+  border-bottom: 1px solid var(--grouptube-border);
 }
 
 .grouptube-prompt-title {
@@ -806,10 +836,10 @@
   max-height: 55vh;
   resize: vertical;
   border-radius: 10px;
-  border: 1px solid var(--yt-spec-10-percent-layer, rgba(0, 0, 0, 0.22));
+  border: 1px solid var(--grouptube-input-border);
   padding: 12px;
-  background: var(--yt-spec-base-background, #ffffff);
-  color: var(--yt-spec-text-primary, #0f0f0f);
+  background: var(--grouptube-surface);
+  color: var(--grouptube-text);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 12px;
   line-height: 1.45;
