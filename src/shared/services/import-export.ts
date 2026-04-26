@@ -4,10 +4,10 @@ import { createGroupId } from "../ids";
 import { sendMessage } from "../messaging/client";
 import { getGroupNameKey, normalizeGroups, sanitizeText } from "../groups";
 import { loadGroups, saveGroups } from "../storage/groups";
-import type { Group, GroupId, Subscription } from "../types";
+import type { GroupId, IGroup, ISubscription } from "../types";
 
 type ParsedImportPayload = {
-  groups: Group[];
+  groups: IGroup[];
   skippedInvalidCount: number;
 };
 
@@ -81,12 +81,12 @@ function parseImportPayload(content: string): ParsedImportPayload {
   };
 }
 
-function normalizeSubscriptions(value: unknown): Subscription[] {
+function normalizeSubscriptions(value: unknown): ISubscription[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  const subscriptions: Subscription[] = [];
+  const subscriptions: ISubscription[] = [];
   for (const item of value) {
     if (!item || typeof item !== "object") {
       continue;
@@ -112,7 +112,7 @@ function normalizeSubscriptions(value: unknown): Subscription[] {
   return subscriptions;
 }
 
-async function fetchCurrentSubscriptions(): Promise<Subscription[]> {
+async function fetchCurrentSubscriptions(): Promise<ISubscription[]> {
   const subscriptions = await sendMessage("get-subscriptions", {});
   return normalizeSubscriptions(subscriptions);
 }
@@ -162,7 +162,7 @@ export async function importGroups(
   let skippedCount = importedPayload.skippedInvalidCount;
   let filteredChannelsCount = 0;
 
-  const groupsToImport: Group[] = [];
+  const groupsToImport: IGroup[] = [];
   for (const group of importedPayload.groups) {
     const groupNameKey = getGroupNameKey(group.name);
     if (!groupNameKey || groupNameKeys.has(groupNameKey)) {

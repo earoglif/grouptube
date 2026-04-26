@@ -1,11 +1,11 @@
-import type { ChannelId, Subscription } from "../../shared/types";
+import type { ChannelId, ISubscription } from "../../shared/types";
 import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideSubscriptionListProps = {
   title: string;
   emptyLabel: string;
   currentPathname: string;
-  subscriptions: Subscription[];
+  subscriptions: ISubscription[];
   newnessMap?: Map<ChannelId, boolean>;
   onChannelSeen?: (channelId: ChannelId) => void;
 };

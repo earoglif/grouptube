@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import type { Subscription } from "../../shared/types";
 import {
   getLastSubscriptions,
   requestSubscriptions,

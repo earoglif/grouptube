@@ -9,7 +9,7 @@ import {
   updateGroup,
 } from "../../storage/groups";
 import { sanitizeText } from "../../groups";
-import type { ChannelId, Group, GroupId } from "../../types";
+import type { ChannelId, GroupId, IGroup } from "../../types";
 import { getLastUserId, requestUserId, subscribeToUserId } from "./user-store";
 import { STORAGE_KEYS } from "../../constants";
 
@@ -25,7 +25,7 @@ type UpdateGroupInput = {
 
 type GroupsSnapshot = {
   userId: string | null;
-  groups: Group[];
+  groups: IGroup[];
   isLoading: boolean;
 };
 
@@ -95,7 +95,7 @@ export function getGroupsSnapshot(): GroupsSnapshot {
   return snapshot;
 }
 
-function setGroups(groups: Group[]): void {
+function setGroups(groups: IGroup[]): void {
   snapshot = { ...snapshot, groups, isLoading: false };
   emit();
 }

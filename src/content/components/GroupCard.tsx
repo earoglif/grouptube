@@ -3,7 +3,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { ChevronDown, Pencil, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Group, Subscription } from "../../shared/types";
+import type { IGroup, ISubscription } from "../../shared/types";
 import { GroupForm, type GroupFormLabels } from "./GroupForm";
 import { SubscriptionItem } from "./SubscriptionItem";
 import { type GroupDragData, getGroupDragId } from "./dnd";
@@ -19,8 +19,8 @@ export type GroupCardLabels = {
 };
 
 type GroupCardProps = {
-  group: Group;
-  subscriptions: Subscription[];
+  group: IGroup;
+  subscriptions: ISubscription[];
   isCollapsed: boolean;
   onToggleCollapsed: () => void;
   labels: GroupCardLabels;

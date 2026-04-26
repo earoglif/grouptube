@@ -1,4 +1,4 @@
-import type { ChannelId, Group, GroupId, Subscription } from "../../shared/types";
+import type { ChannelId, GroupId, IGroup, ISubscription } from "../../shared/types";
 
 type PromptChannel = {
   channelId: ChannelId;
@@ -8,8 +8,8 @@ type PromptChannel = {
 };
 
 type BuildGroupingPromptInput = {
-  groups: Group[];
-  subscriptions: Subscription[];
+  groups: IGroup[];
+  subscriptions: ISubscription[];
   channelToGroupMap: Map<ChannelId, GroupId>;
 };
 

@@ -1,5 +1,5 @@
 import { useDndContext, useDroppable } from "@dnd-kit/core";
-import type { Subscription } from "../../shared/types";
+import type { ISubscription } from "../../shared/types";
 import { SubscriptionItem } from "./SubscriptionItem";
 import { UNGROUPED_DROP_ID } from "./dnd";
 
@@ -7,7 +7,7 @@ type SubscriptionListProps = {
   title: string;
   emptyLabel: string;
   dragSubscriptionLabel: string;
-  subscriptions: Subscription[];
+  subscriptions: ISubscription[];
 };
 
 export function SubscriptionList({ title, emptyLabel, dragSubscriptionLabel, subscriptions }: SubscriptionListProps) {

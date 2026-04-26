@@ -1,4 +1,4 @@
-import type { Subscription } from "../../shared/types";
+import type { ISubscription } from "../../shared/types";
 import type { SubscriptionSortMode } from "./subscription-sort";
 
 const NAME_COLLATOR = new Intl.Collator(undefined, { sensitivity: "base" });
@@ -7,7 +7,7 @@ export function isSubscriptionSortMode(value: string): value is SubscriptionSort
   return value === "relevance" || value === "nameAsc" || value === "nameDesc";
 }
 
-export function sortSubscriptions(subscriptions: Subscription[], sortMode: SubscriptionSortMode): Subscription[] {
+export function sortSubscriptions(subscriptions: ISubscription[], sortMode: SubscriptionSortMode): ISubscription[] {
   if (sortMode === "relevance") {
     return subscriptions;
   }

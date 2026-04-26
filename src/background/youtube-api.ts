@@ -1,5 +1,5 @@
 import { identity } from "webextension-polyfill";
-import type { ChannelId, Subscription } from "../shared/types";
+import type { ChannelId, ISubscription } from "../shared/types";
 
 const YOUTUBE_SUBSCRIPTIONS_URL = "https://www.googleapis.com/youtube/v3/subscriptions";
 const YOUTUBE_PLAYLIST_ITEMS_URL = "https://www.googleapis.com/youtube/v3/playlistItems";
@@ -68,7 +68,7 @@ export async function getOAuthToken(): Promise<string> {
   throw new Error("OAuth token was not received");
 }
 
-function mapItemToSubscription(item: SubscriptionListItem): Subscription | null {
+function mapItemToSubscription(item: SubscriptionListItem): ISubscription | null {
   const channelId = item.snippet?.resourceId?.channelId?.trim();
   const name = item.snippet?.title?.trim();
 
@@ -116,9 +116,9 @@ async function fetchSubscriptionsPage(token: string, pageToken?: string): Promis
   return payload;
 }
 
-export async function fetchUserSubscriptions(): Promise<Subscription[]> {
+export async function fetchUserSubscriptions(): Promise<ISubscription[]> {
   const token = await getOAuthToken();
-  const subscriptions: Subscription[] = [];
+  const subscriptions: ISubscription[] = [];
   let pageToken: string | undefined;
 
   do {
@@ -252,7 +252,7 @@ export async function fetchLatestUploadDates(
 
 export async function fetchChannelDetails(
   channelId: ChannelId,
-): Promise<Subscription | null> {
+): Promise<ISubscription | null> {
   const normalizedChannelId = channelId.trim();
   if (!normalizedChannelId) return null;
 

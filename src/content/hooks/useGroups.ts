@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useSyncExternalStore } from "react";
-import type { ChannelId, Group, GroupId } from "../../shared/types";
+import type { ChannelId, GroupId } from "../../shared/types";
 import {
   assignChannelToGroupAction as assignChannelToGroupInStore,
   assignChannelsToGroupAction as assignChannelsToGroupInStore,

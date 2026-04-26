@@ -1,7 +1,7 @@
 export type ChannelId = string;
 export type GroupId = string;
 
-export interface Subscription {
+export interface ISubscription {
   channelId: ChannelId;
   name: string;
   thumbnailUrl?: string;
@@ -9,7 +9,7 @@ export interface Subscription {
   hasNewContent?: boolean;
 }
 
-export interface Group {
+export interface IGroup {
   id: GroupId;
   name: string;
   color: string;

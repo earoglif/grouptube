@@ -10,7 +10,7 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove } from "@dnd-kit/sortable";
-import type { ChannelId, Group, GroupId } from "../../../shared/types";
+import type { ChannelId, GroupId, IGroup } from "../../../shared/types";
 import { UNGROUPED_DROP_ID, parseGroupId, parseSubscriptionChannelId } from "../../components/dnd";
 
 const restrictToVerticalAxis: Modifier = ({ transform }) => ({
@@ -40,9 +40,9 @@ function resolveDropTargetGroupId(
 }
 
 type UseGroupsDndInput = {
-  groups: Group[];
-  reorderGroups: (groupIds: GroupId[]) => Promise<Group[]>;
-  assignChannelToGroup: (channelId: ChannelId, targetGroupId: GroupId | null) => Promise<Group[]>;
+  groups: IGroup[];
+  reorderGroups: (groupIds: GroupId[]) => Promise<IGroup[]>;
+  assignChannelToGroup: (channelId: ChannelId, targetGroupId: GroupId | null) => Promise<IGroup[]>;
 };
 
 export function useGroupsDnd({ groups, reorderGroups, assignChannelToGroup }: UseGroupsDndInput) {

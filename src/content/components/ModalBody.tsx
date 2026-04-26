@@ -12,7 +12,7 @@ import { useGroupsDnd } from "../modal/hooks/useGroupsDnd";
 import { buildGroupingPrompt } from "../services/grouping-prompt";
 import { isSubscriptionSortMode, sortSubscriptions } from "../services/sort-subscriptions";
 import { loadSubscriptionSort, saveSubscriptionSort, type SubscriptionSortMode } from "../services/subscription-sort";
-import type { Subscription } from "../../shared/types";
+import type { ISubscription } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
 import { GroupingPromptDialog } from "./GroupingPromptDialog";
 import { GroupList } from "./GroupList";
@@ -55,7 +55,7 @@ export type ModalBodyLabels = {
 
 type ModalBodyProps = {
   labels: ModalBodyLabels;
-  subscriptions: Subscription[];
+  subscriptions: ISubscription[];
   isSubscriptionsLoading: boolean;
 };
 
@@ -130,12 +130,12 @@ export const ModalBody = forwardRef<ModalBodyHandle, ModalBodyProps>(function Mo
   );
 
   const { subscriptionsByGroupId, ungroupedSubscriptions } = useMemo(() => {
-    const grouped = new Map<string, Subscription[]>();
+    const grouped = new Map<string, ISubscription[]>();
     for (const group of groups) {
       grouped.set(group.id, []);
     }
 
-    const ungrouped: Subscription[] = [];
+    const ungrouped: ISubscription[] = [];
     for (const subscription of sortedSubscriptions) {
       const groupId = channelToGroupMap.get(subscription.channelId);
       if (groupId && grouped.has(groupId)) {

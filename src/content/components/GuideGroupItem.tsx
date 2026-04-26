@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import type { ChannelId, Group, Subscription } from "../../shared/types";
+import type { ChannelId, IGroup, ISubscription } from "../../shared/types";
 import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideGroupItemLabels = {
@@ -9,8 +9,8 @@ type GuideGroupItemLabels = {
 };
 
 type GuideGroupItemProps = {
-  group: Group;
-  subscriptions: Subscription[];
+  group: IGroup;
+  subscriptions: ISubscription[];
   currentPathname: string;
   isCollapsed: boolean;
   onToggleCollapsed: () => void;

@@ -1,1 +1,1 @@
-export type { ChannelId, Group, GroupId, Subscription } from "../shared/types";
+export type { ChannelId, GroupId, IGroup, ISubscription } from "../shared/types";

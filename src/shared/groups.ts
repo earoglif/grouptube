@@ -1,4 +1,4 @@
-import type { ChannelId, Group } from "./types";
+import type { ChannelId, IGroup } from "./types";
 
 export const DEFAULT_GROUP_COLOR = "#3ea6ff";
 
@@ -23,7 +23,7 @@ export function sanitizeChannelIds(value: unknown): ChannelId[] {
   return [...new Set(ids)];
 }
 
-export function normalizeGroup(value: unknown): Group | null {
+export function normalizeGroup(value: unknown): IGroup | null {
   if (!isRecord(value)) return null;
 
   const id = sanitizeText(value.id);
@@ -39,12 +39,12 @@ export function normalizeGroup(value: unknown): Group | null {
   };
 }
 
-export function normalizeGroups(value: unknown): Group[] {
+export function normalizeGroups(value: unknown): IGroup[] {
   if (!Array.isArray(value)) return [];
 
   const groups = value
     .map((item) => normalizeGroup(item))
-    .filter((item): item is Group => item !== null);
+    .filter((item): item is IGroup => item !== null);
 
   return groups.map((group) => ({
     ...group,

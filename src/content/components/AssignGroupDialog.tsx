@@ -1,6 +1,6 @@
 import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
 import { DiamondPlus, X } from "lucide-react";
-import type { Group, GroupId } from "../../shared/types";
+import type { GroupId, IGroup } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
 import type { SubscribedChannelInfo } from "../services/subscribe-watcher";
 
@@ -21,7 +21,7 @@ export type AssignGroupDialogLabels = {
 
 type AssignGroupDialogProps = {
   channel: SubscribedChannelInfo;
-  groups: Group[];
+  groups: IGroup[];
   labels: AssignGroupDialogLabels;
   onAssignToExisting: (groupId: GroupId) => Promise<void> | void;
   onCreateAndAssign: (values: { name: string; color: string }) => Promise<void> | void;

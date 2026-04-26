@@ -1,9 +1,9 @@
-import type { ChannelId, Subscription } from "../types";
+import type { ChannelId, ISubscription } from "../types";
 
 export type MessageMap = {
   "get-subscriptions": {
     req: Record<string, never>;
-    res: Subscription[];
+    res: ISubscription[];
   };
   "get-channel-newness": {
     req: { channelIds: ChannelId[] };
@@ -15,7 +15,7 @@ export type MessageMap = {
   };
   "get-channel-details": {
     req: { channelId: ChannelId };
-    res: Subscription | null;
+    res: ISubscription | null;
   };
 };
 

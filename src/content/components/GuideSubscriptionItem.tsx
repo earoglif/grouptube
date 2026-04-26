@@ -1,8 +1,8 @@
 import { handleYouTubeSpaLinkClick } from "../services/yt-navigation";
-import type { ChannelId, Subscription } from "../../shared/types";
+import type { ChannelId, ISubscription } from "../../shared/types";
 
 type GuideSubscriptionItemProps = {
-  subscription: Subscription;
+  subscription: ISubscription;
   currentPathname: string;
   hasNewContent?: boolean;
   onSeen?: (channelId: ChannelId) => void;

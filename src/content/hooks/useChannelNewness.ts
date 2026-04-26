@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { notify } from "../../shared/services/notifications";
 import { markChannelSeen, requestChannelNewness } from "../services/newness";
-import type { ChannelId, Subscription } from "../../shared/types";
+import type { ChannelId, ISubscription } from "../../shared/types";
 
 type UseChannelNewnessResult = {
   newnessMap: Map<ChannelId, boolean>;
   markSeen: (channelId: ChannelId) => void;
 };
 
-export function useChannelNewness(subscriptions: Subscription[]): UseChannelNewnessResult {
+export function useChannelNewness(subscriptions: ISubscription[]): UseChannelNewnessResult {
   const [newnessMap, setNewnessMap] = useState<Map<ChannelId, boolean>>(() => new Map());
   const fetchedRef = useRef(false);
 

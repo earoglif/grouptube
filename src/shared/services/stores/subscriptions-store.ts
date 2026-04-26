@@ -1,22 +1,22 @@
 import { sendMessage } from "../../messaging/client";
-import type { Subscription } from "../../types";
+import type { ISubscription } from "../../types";
 
-type SubscriptionsListener = (subscriptions: Subscription[]) => void;
+type SubscriptionsListener = (subscriptions: ISubscription[]) => void;
 
-let lastSubscriptions: Subscription[] = [];
+let lastSubscriptions: ISubscription[] = [];
 const listeners = new Set<SubscriptionsListener>();
 
-function emit(subs: Subscription[]): void {
+function emit(subs: ISubscription[]): void {
   lastSubscriptions = subs;
   for (const fn of listeners) fn(subs);
 }
 
-function normalizeSubscriptions(value: unknown): Subscription[] {
+function normalizeSubscriptions(value: unknown): ISubscription[] {
   if (!Array.isArray(value)) {
     return [];
   }
 
-  const normalized: Subscription[] = [];
+  const normalized: ISubscription[] = [];
   for (const item of value) {
     if (!item || typeof item !== "object") {
       continue;
@@ -72,18 +72,18 @@ export function requestSubscriptions(): void {
   });
 }
 
-export function getLastSubscriptions(): Subscription[] {
+export function getLastSubscriptions(): ISubscription[] {
   return lastSubscriptions;
 }
 
-export function upsertSubscription(subscription: Subscription): void {
+export function upsertSubscription(subscription: ISubscription): void {
   const channelId = typeof subscription.channelId === "string" ? subscription.channelId.trim() : "";
   if (!channelId) return;
 
   const name = typeof subscription.name === "string" ? subscription.name.trim() : "";
   if (!name) return;
 
-  const nextItem: Subscription = {
+  const nextItem: ISubscription = {
     channelId,
     name,
     thumbnailUrl:
@@ -103,7 +103,7 @@ export function upsertSubscription(subscription: Subscription): void {
   }
 
   const existing = lastSubscriptions[existingIndex];
-  const merged: Subscription = {
+  const merged: ISubscription = {
     ...existing,
     ...nextItem,
     name: nextItem.name || existing.name,
@@ -131,7 +131,7 @@ export function removeSubscriptions(channelIds: string[]): void {
   emit(nextList);
 }
 
-export async function requestChannelDetails(channelId: string): Promise<Subscription | null> {
+export async function requestChannelDetails(channelId: string): Promise<ISubscription | null> {
   const normalizedChannelId = typeof channelId === "string" ? channelId.trim() : "";
   if (!normalizedChannelId) return null;
 

@@ -1,12 +1,12 @@
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import type { Group, Subscription } from "../../shared/types";
+import type { IGroup, ISubscription } from "../../shared/types";
 import { type GroupFormLabels } from "./GroupForm";
 import { GroupCard, type GroupCardLabels } from "./GroupCard";
 import { getGroupDragId } from "./dnd";
 
 type GroupListProps = {
-  groups: Group[];
-  subscriptionsByGroupId: Map<string, Subscription[]>;
+  groups: IGroup[];
+  subscriptionsByGroupId: Map<string, ISubscription[]>;
   collapsedGroupIds: ReadonlySet<string>;
   onToggleGroupCollapsed: (groupId: string) => void;
   labels: GroupCardLabels;
