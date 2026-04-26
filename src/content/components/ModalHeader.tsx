@@ -1,4 +1,4 @@
-import { BotMessageSquare, Download, RefreshCw, Upload } from "lucide-react";
+import { BotMessageSquare, Download, RefreshCw, Upload, X } from "lucide-react";
 
 type ModalHeaderProps = {
   title: string;
@@ -79,7 +79,7 @@ export function ModalHeader({
           <RefreshCw size={20} strokeWidth={2} aria-hidden="true" />
         </button>
         <button type="button" aria-label={closeLabel} className="grouptube-icon-button" onClick={onClose}>
-          ×
+          <X size={20} strokeWidth={2} aria-hidden="true" />
         </button>
       </div>
     </div>

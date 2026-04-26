@@ -1,4 +1,5 @@
 import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
+import { X } from "lucide-react";
 
 type CopyStatus = "idle" | "copied" | "error";
 
@@ -85,7 +86,7 @@ export function GroupingPromptDialog({
             {labels.title}
           </h3>
           <button type="button" className="grouptube-icon-button" aria-label={labels.closeLabel} onClick={onClose}>
-            ×
+            <X size={20} strokeWidth={2} aria-hidden="true" />
           </button>
         </div>
 

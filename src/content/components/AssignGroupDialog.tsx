@@ -1,5 +1,5 @@
 import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
-import { DiamondPlus } from "lucide-react";
+import { DiamondPlus, X } from "lucide-react";
 import type { Group, GroupId } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
 import type { SubscribedChannelInfo } from "../services/subscribe-watcher";
@@ -115,7 +115,7 @@ export function AssignGroupDialog({
               onClick={onClose}
               disabled={isBusy}
             >
-              ×
+              <X size={20} strokeWidth={2} aria-hidden="true" />
             </button>
           </div>
         </div>
