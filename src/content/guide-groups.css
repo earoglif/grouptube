@@ -46,15 +46,6 @@
   outline: none;
 }
 
-.guide-groups-item:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.guide-groups-item:disabled:hover {
-  background: transparent;
-}
-
 .guide-groups-icon {
   width: 24px;
   height: 24px;

@@ -1,31 +1,14 @@
 import { sendMessage } from "../../messaging/client";
 import type { ISubscription } from "../../types";
 
-type SubscriptionsSnapshot = {
-  subscriptions: ISubscription[];
-  isLoading: boolean;
-  authRequired: boolean;
-};
 type SubscriptionsListener = (subscriptions: ISubscription[]) => void;
 
 let lastSubscriptions: ISubscription[] = [];
-let isLoading = true;
-let authRequired = false;
-let snapshot: SubscriptionsSnapshot = {
-  subscriptions: lastSubscriptions,
-  isLoading,
-  authRequired,
-};
 const listeners = new Set<SubscriptionsListener>();
 
-function emit(subs = lastSubscriptions): void {
+function emit(subs: ISubscription[]): void {
   lastSubscriptions = subs;
-  snapshot = {
-    subscriptions: lastSubscriptions,
-    isLoading,
-    authRequired,
-  };
-  for (const fn of listeners) fn(lastSubscriptions);
+  for (const fn of listeners) fn(subs);
 }
 
 function normalizeSubscriptions(value: unknown): ISubscription[] {
@@ -63,12 +46,7 @@ function normalizeSubscriptions(value: unknown): ISubscription[] {
 }
 
 async function loadSubscriptions(): Promise<void> {
-  isLoading = true;
-  authRequired = false;
-  emit();
-
   const subscriptions = await sendMessage("get-subscriptions", {});
-  isLoading = false;
   emit(normalizeSubscriptions(subscriptions));
 }
 
@@ -78,7 +56,7 @@ export function subscribeToSubscriptions(
 ): () => void {
   listeners.add(listener);
 
-  if (emitCached) {
+  if (emitCached && lastSubscriptions.length > 0) {
     listener(lastSubscriptions);
   }
 
@@ -90,18 +68,12 @@ export function subscribeToSubscriptions(
 export function requestSubscriptions(): void {
   void loadSubscriptions().catch((error: unknown) => {
     console.error("Failed to request subscriptions", error);
-    isLoading = false;
-    authRequired = true;
-    emit();
+    emit(lastSubscriptions);
   });
 }
 
 export function getLastSubscriptions(): ISubscription[] {
   return lastSubscriptions;
-}
-
-export function getSubscriptionsSnapshot(): SubscriptionsSnapshot {
-  return snapshot;
 }
 
 export function upsertSubscription(subscription: ISubscription): void {
