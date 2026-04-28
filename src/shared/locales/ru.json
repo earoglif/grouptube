@@ -9,6 +9,7 @@
   "sortNameAsc": "A→Z",
   "sortNameDesc": "Z→A",
   "loading": "Загрузка...",
+  "youtubeAuthRequired": "Войдите в YouTube, чтобы использовать группы.",
   "noGroups": "Создайте первую группу для сортировки подписок.",
   "ungroupedSubscriptions": "Подписки без группы",
   "ungroupedEmpty": "Все подписки уже распределены по группам.",

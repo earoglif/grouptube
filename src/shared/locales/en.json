@@ -9,6 +9,7 @@
   "sortNameAsc": "A→Z",
   "sortNameDesc": "Z→A",
   "loading": "Loading...",
+  "youtubeAuthRequired": "Sign in to YouTube to use groups.",
   "noGroups": "Create your first group to organize subscriptions.",
   "ungroupedSubscriptions": "Ungrouped subscriptions",
   "ungroupedEmpty": "All subscriptions are already grouped.",

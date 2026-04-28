@@ -28,12 +28,13 @@ function getCurrentPathname(): string {
 }
 
 type GuideGroupsButtonProps = {
+  disabled?: boolean;
   onClick: () => void;
 };
 
-function GuideGroupsButton({ onClick }: GuideGroupsButtonProps) {
+function GuideGroupsButton({ disabled, onClick }: GuideGroupsButtonProps) {
   return (
-    <button type="button" className="guide-groups-item" onClick={onClick}>
+    <button type="button" className="guide-groups-item" disabled={disabled} onClick={onClick}>
       <span className="guide-groups-icon" aria-hidden="true">
         <Group size={24} strokeWidth={2} />
       </span>
@@ -49,8 +50,8 @@ function GuideGroupsSection() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortMode, setSortMode] = useState<SubscriptionSortMode>("relevance");
   const [currentPathname, setCurrentPathname] = useState(getCurrentPathname);
+  const { subscriptions, isLoading: isSubscriptionsLoading, authRequired } = useSubscriptions();
   const { userId, groups, isLoading: isGroupsLoading, channelToGroupMap } = useGroups();
-  const { subscriptions, isLoading: isSubscriptionsLoading } = useSubscriptions();
   const { newnessMap, markSeen } = useChannelNewness(subscriptions);
   const [collapsedGroupIds, setCollapsedGroupIds] = useCollapsedGroupsPersistence(
     userId,
@@ -142,8 +143,10 @@ function GuideGroupsSection() {
   return (
     <div className="guide-groups-container">
       <div className="guide-groups-section">
-        <GuideGroupsButton onClick={() => setIsModalOpen(true)} />
-        {!isListLoading ? (
+        <GuideGroupsButton disabled={authRequired} onClick={() => setIsModalOpen(true)} />
+        {authRequired ? (
+          <p className="guide-empty-text">{t("youtubeAuthRequired")}</p>
+        ) : !isListLoading ? (
           <div className="guide-groups-list">
             {groups.map((group) => (
               <GuideGroupItem
