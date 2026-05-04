@@ -179,7 +179,6 @@ function GuideGroupsSection() {
         labels={{
           closeLabel: t("close"),
           newGroupLabel: t("newGroup"),
-          refreshLabel: t("refresh"),
           exportLabel: t("exportGroups"),
           importLabel: t("importGroups"),
           sortLabel: t("sortSubscriptions"),

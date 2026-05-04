@@ -17,7 +17,6 @@ const MODAL_STYLE_ID = "grouptube-modal-styles";
 
 export type GroupsModalLabels = ModalBodyLabels & {
   closeLabel: string;
-  refreshLabel: string;
   exportLabel: string;
   importLabel: string;
 };
@@ -128,8 +127,6 @@ function GroupsModalPortalContent({ portalRoot, title, labels, onClose }: Groups
             importLabel={labels.importLabel}
             onImport={handleImportClick}
             actionsDisabled={isImportExportBusy}
-            refreshLabel={labels.refreshLabel}
-            onRefresh={refresh}
             closeLabel={labels.closeLabel}
             onClose={onClose}
           />

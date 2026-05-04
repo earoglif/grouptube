@@ -1,4 +1,4 @@
-import { BotMessageSquare, Download, RefreshCw, Upload, X } from "lucide-react";
+import { BotMessageSquare, Download, Upload, X } from "lucide-react";
 
 type ModalHeaderProps = {
   title: string;
@@ -6,8 +6,6 @@ type ModalHeaderProps = {
   openGroupingPromptLabel: string;
   onOpenGroupingPrompt: () => void;
   groupingPromptDisabled?: boolean;
-  refreshLabel: string;
-  onRefresh: () => void;
   exportLabel: string;
   onExport: () => void;
   importLabel: string;
@@ -23,8 +21,6 @@ export function ModalHeader({
   openGroupingPromptLabel,
   onOpenGroupingPrompt,
   groupingPromptDisabled,
-  refreshLabel,
-  onRefresh,
   exportLabel,
   onExport,
   importLabel,
@@ -68,15 +64,6 @@ export function ModalHeader({
           onClick={onOpenGroupingPrompt}
         >
           <BotMessageSquare size={20} strokeWidth={2} aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          className="grouptube-icon-button"
-          aria-label={refreshLabel}
-          title={refreshLabel}
-          onClick={onRefresh}
-        >
-          <RefreshCw size={20} strokeWidth={2} aria-hidden="true" />
         </button>
         <button type="button" aria-label={closeLabel} className="grouptube-icon-button" onClick={onClose}>
           <X size={20} strokeWidth={2} aria-hidden="true" />
