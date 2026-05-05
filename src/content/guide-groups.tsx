@@ -164,7 +164,6 @@ function GuideGroupsSection() {
             ))}
             <GuideSubscriptionList
               title={t("ungroupedSubscriptions")}
-              emptyLabel={t("ungroupedEmpty")}
               currentPathname={currentPathname}
               subscriptions={ungroupedSubscriptions}
               newnessMap={newnessMap}

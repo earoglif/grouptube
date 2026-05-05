@@ -3,7 +3,6 @@ import { GuideSubscriptionItem } from "./GuideSubscriptionItem";
 
 type GuideSubscriptionListProps = {
   title: string;
-  emptyLabel: string;
   currentPathname: string;
   subscriptions: ISubscription[];
   newnessMap?: Map<ChannelId, boolean>;
@@ -12,29 +11,26 @@ type GuideSubscriptionListProps = {
 
 export function GuideSubscriptionList({
   title,
-  emptyLabel,
   currentPathname,
   subscriptions,
   newnessMap,
   onChannelSeen,
 }: GuideSubscriptionListProps) {
+  if (subscriptions.length === 0) return null;
+
   return (
     <section className="guide-ungrouped">
       <h3 className="guide-ungrouped-title">{title}</h3>
       <div className="guide-sub-list">
-        {subscriptions.length > 0 ? (
-          subscriptions.map((subscription) => (
-            <GuideSubscriptionItem
-              key={subscription.channelId}
-              subscription={subscription}
-              currentPathname={currentPathname}
-              hasNewContent={newnessMap?.get(subscription.channelId) ?? false}
-              onSeen={onChannelSeen}
-            />
-          ))
-        ) : (
-          <p className="guide-empty-text">{emptyLabel}</p>
-        )}
+        {subscriptions.map((subscription) => (
+          <GuideSubscriptionItem
+            key={subscription.channelId}
+            subscription={subscription}
+            currentPathname={currentPathname}
+            hasNewContent={newnessMap?.get(subscription.channelId) ?? false}
+            onSeen={onChannelSeen}
+          />
+        ))}
       </div>
     </section>
   );
