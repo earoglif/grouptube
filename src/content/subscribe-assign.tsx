@@ -7,7 +7,7 @@ import { ensureShadowMount } from "./mount";
 import { AssignGroupDialog } from "./components/AssignGroupDialog";
 import { useGroups } from "./hooks/useGroups";
 import { t } from "./i18n";
-import { removeSubscriptions, requestChannelDetails, upsertSubscription } from "./services/subscriptions";
+import { removeSubscriptions, requestChannelDetails, requestSubscriptions, upsertSubscription } from "./services/subscriptions";
 import {
   initSubscribeWatcher,
   initUnsubscribeWatcher,
@@ -63,6 +63,7 @@ function SubscribeAssignRoot() {
     });
     const stopUnsubscribe = initUnsubscribeWatcher((channelIds) => {
       removeSubscriptions(channelIds);
+      requestSubscriptions();
       void assignChannelsToGroup(channelIds, null);
       setPendingChannel((current) =>
         current && channelIds.includes(current.channelId) ? null : current

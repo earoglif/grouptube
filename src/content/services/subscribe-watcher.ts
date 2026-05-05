@@ -137,8 +137,7 @@ export function initUnsubscribeWatcher(onUnsubscribed: UnsubscribeWatcherCallbac
     }
 
     const info = extractChannelInfo();
-    if (!info) return;
-    onUnsubscribed([info.channelId]);
+    onUnsubscribed(info ? [info.channelId] : []);
   };
 
   window.addEventListener(PAGE_BRIDGE_EVENTS.subscriptionUnsubscribe, handleUnsubscribeEvent as EventListener);

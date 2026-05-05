@@ -15,7 +15,11 @@ const CHANNEL_ID_IN_ARRAY_REGEX = /"(UC[a-zA-Z0-9_-]{20,})"/g;
 const SINGLE_CHANNEL_ID_REGEX = /"channelId"\s*:\s*"(UC[a-zA-Z0-9_-]{20,})"/;
 type SubscribeRequestInput = Parameters<typeof fetch>[0];
 type SubscribeRequestInit = Parameters<typeof fetch>[1];
-type XhrWithSubscribeUrl = XMLHttpRequest & { __grouptubeSubscribeUrl?: string };
+type XhrWithSubscribeUrl = XMLHttpRequest & {
+  __grouptubeSubscribeUrl?: string;
+  __grouptubeSubscriptionEventName?: string;
+  __grouptubeSubscriptionChannelIds?: string[];
+};
 
 function getYtData() {
   const ytcfg = (window as Window & { ytcfg?: { data_?: Record<string, unknown> } }).ytcfg;
@@ -114,6 +118,12 @@ function parseSubscribeBody(body: unknown): string[] {
   }
 
   if (body instanceof URLSearchParams) {
+    const ids = body.getAll("channelIds");
+    if (ids.length > 0) return uniqueStringArray(ids);
+
+    const c = body.get("channelId");
+    if (c) return uniqueStringArray([c]);
+
     const data = body.get("data");
     if (data) {
       const fromData = parseChannelIdsFromRawText(data);
@@ -223,6 +233,9 @@ function installSubscribeRequestBridge() {
       input: SubscribeRequestInput,
       init?: SubscribeRequestInit
     ) {
+      let eventName: string | null = null;
+      let channelIdsPromise: Promise<string[]> | null = null;
+
       try {
         const url =
           typeof input === "string"
@@ -231,23 +244,51 @@ function installSubscribeRequestBridge() {
               ? input.url
               : "";
         if (typeof url === "string" && (url.includes(SUBSCRIBE_URL_MARKER) || url.includes(UNSUBSCRIBE_URL_MARKER))) {
-          const eventName = url.includes(UNSUBSCRIBE_URL_MARKER)
+          eventName = url.includes(UNSUBSCRIBE_URL_MARKER)
             ? EVENT_SUBSCRIPTION_UNSUBSCRIBE
             : EVENT_SUBSCRIPTION_SUBSCRIBE;
           logger.debug(`${DEBUG_PREFIX} fetch subscription match`, { url, eventName });
-          void parseSubscribeBodyFromRequest(input, init).then((channelIds) => {
-            const body = init && init.body !== undefined ? init.body : undefined;
-            logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
-              channelIds,
-              bodyType: typeof body,
-              inputType: input instanceof Request ? "Request" : typeof input,
+          channelIdsPromise = parseSubscribeBodyFromRequest(input, init);
+
+          if (eventName === EVENT_SUBSCRIPTION_SUBSCRIBE) {
+            void channelIdsPromise.then((channelIds) => {
+              const body = init && init.body !== undefined ? init.body : undefined;
+              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
+                channelIds,
+                bodyType: typeof body,
+                inputType: input instanceof Request ? "Request" : typeof input,
+              });
+              emitSubscriptionEvent(eventName ?? EVENT_SUBSCRIPTION_SUBSCRIBE, channelIds);
             });
-            emitSubscriptionEvent(eventName, channelIds);
-          });
+          }
         }
       } catch {}
 
-      return originalFetch.call(this, input, init);
+      const responsePromise = originalFetch.call(this, input, init);
+
+      if (eventName === EVENT_SUBSCRIPTION_UNSUBSCRIBE && channelIdsPromise) {
+        void responsePromise
+          .then((response) => {
+            if (!response.ok) {
+              logger.debug(`${DEBUG_PREFIX} fetch unsubscribe failed`, { status: response.status });
+              return;
+            }
+            void channelIdsPromise?.then((channelIds) => {
+              const body = init && init.body !== undefined ? init.body : undefined;
+              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
+                channelIds,
+                bodyType: typeof body,
+                inputType: input instanceof Request ? "Request" : typeof input,
+              });
+              emitSubscriptionEvent(EVENT_SUBSCRIPTION_UNSUBSCRIBE, channelIds);
+            });
+          })
+          .catch((error) => {
+            logger.debug(`${DEBUG_PREFIX} fetch unsubscribe request failed`, { error });
+          });
+      }
+
+      return responsePromise;
     };
   }
 
@@ -265,6 +306,8 @@ function installSubscribeRequestBridge() {
     const xhr = this as XhrWithSubscribeUrl;
     try {
       xhr.__grouptubeSubscribeUrl = typeof url === "string" ? url : "";
+      xhr.__grouptubeSubscriptionEventName = undefined;
+      xhr.__grouptubeSubscriptionChannelIds = undefined;
       if (
         typeof xhr.__grouptubeSubscribeUrl === "string" &&
         (xhr.__grouptubeSubscribeUrl.includes(SUBSCRIBE_URL_MARKER) ||
@@ -295,7 +338,24 @@ function installSubscribeRequestBridge() {
           : EVENT_SUBSCRIPTION_SUBSCRIBE;
         const channelIds = parseSubscribeBody(body);
         logger.debug(`${DEBUG_PREFIX} xhr parsed channelIds`, { channelIds, bodyType: typeof body });
-        emitSubscriptionEvent(eventName, channelIds);
+
+        if (eventName === EVENT_SUBSCRIPTION_UNSUBSCRIBE) {
+          xhr.__grouptubeSubscriptionEventName = eventName;
+          xhr.__grouptubeSubscriptionChannelIds = channelIds;
+          xhr.addEventListener(
+            "loadend",
+            () => {
+              if (xhr.status < 200 || xhr.status >= 300) {
+                logger.debug(`${DEBUG_PREFIX} xhr unsubscribe failed`, { status: xhr.status });
+                return;
+              }
+              emitSubscriptionEvent(EVENT_SUBSCRIPTION_UNSUBSCRIBE, xhr.__grouptubeSubscriptionChannelIds ?? []);
+            },
+            { once: true }
+          );
+        } else {
+          emitSubscriptionEvent(eventName, channelIds);
+        }
       }
     } catch {}
     return originalSend.apply(this, args);
