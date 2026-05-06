@@ -1,7 +1,6 @@
 import { storage } from "webextension-polyfill";
 import { STORAGE_KEYS } from "../../constants";
 import { PAGE_BRIDGE_EVENTS } from "../../page-bridge/events";
-import { ensurePageBridgeInjected } from "../../../content/services/page-bridge";
 
 type UserInfoDetail = {
   userId?: unknown;
@@ -39,7 +38,6 @@ function handleUserInfoEvent(event: Event): void {
 
 function ensureListener(): void {
   if (listening) return;
-  ensurePageBridgeInjected();
   window.addEventListener(PAGE_BRIDGE_EVENTS.userInfo, handleUserInfoEvent as EventListener);
   listening = true;
 }

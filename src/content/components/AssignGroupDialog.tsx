@@ -1,10 +1,15 @@
 import { type KeyboardEvent as ReactKeyboardEvent, type MouseEvent, useEffect, useState } from "react";
 import { DiamondPlus, X } from "lucide-react";
-import type { GroupId, IGroup } from "../../shared/types";
+import type { ChannelId, GroupId, IGroup } from "../../shared/types";
 import { GroupForm } from "./GroupForm";
-import type { SubscribedChannelInfo } from "../services/subscribe-watcher";
 
 const DIALOG_TITLE_ID = "grouptube-assign-group-dialog-title";
+
+export type SubscribedChannelInfo = {
+  channelId: ChannelId;
+  name: string;
+  thumbnailUrl?: string;
+};
 
 export type AssignGroupDialogLabels = {
   title: string;

@@ -4,15 +4,11 @@ import { logger } from "../shared/logger";
 import { notify } from "../shared/services/notifications";
 import modalStyles from "./groups-modal.css?inline";
 import { ensureShadowMount } from "./mount";
-import { AssignGroupDialog } from "./components/AssignGroupDialog";
+import { AssignGroupDialog, type SubscribedChannelInfo } from "./components/AssignGroupDialog";
 import { useGroups } from "./hooks/useGroups";
 import { t } from "./i18n";
 import { removeSubscriptions, requestChannelDetails, requestSubscriptions, upsertSubscription } from "./services/subscriptions";
-import {
-  initSubscribeWatcher,
-  initUnsubscribeWatcher,
-  type SubscribedChannelInfo,
-} from "./services/subscribe-watcher";
+import { initSubscribeWatcher, initUnsubscribeWatcher } from "./services/subscribe-watcher";
 
 const ROOT_HOST_ID = "grouptube-subscribe-assign-host";
 const STYLE_ELEMENT_ID = "grouptube-subscribe-assign-shadow-styles";
@@ -25,20 +21,19 @@ function SubscribeAssignRoot() {
 
   useEffect(() => {
     logger.debug(`${DEBUG_PREFIX} mount; initSubscribeWatcher`);
-    const stopSubscribe = initSubscribeWatcher((info) => {
+    const stopSubscribe = initSubscribeWatcher((channelId) => {
       const fallbackInfo: SubscribedChannelInfo = {
-        channelId: info.channelId,
-        name: info.name.trim() || info.channelId,
-        thumbnailUrl: info.thumbnailUrl,
+        channelId,
+        name: channelId,
       };
 
-      void requestChannelDetails(info.channelId)
+      void requestChannelDetails(channelId)
         .then((subscription) => {
-          const resolved = subscription
+          const resolved: SubscribedChannelInfo = subscription
             ? {
                 channelId: subscription.channelId,
                 name: subscription.name.trim() || fallbackInfo.name,
-                thumbnailUrl: subscription.thumbnailUrl ?? fallbackInfo.thumbnailUrl,
+                thumbnailUrl: subscription.thumbnailUrl,
               }
             : fallbackInfo;
 
@@ -56,7 +51,6 @@ function SubscribeAssignRoot() {
           upsertSubscription({
             channelId: fallbackInfo.channelId,
             name: fallbackInfo.name,
-            thumbnailUrl: fallbackInfo.thumbnailUrl,
           });
           logger.debug(`${DEBUG_PREFIX} set pending channel (fallback)`, fallbackInfo);
           setPendingChannel(fallbackInfo);
