@@ -23,6 +23,10 @@ function unescapeJsonString(value: string): string {
   }
 }
 
+/**
+ * Extract channel info from scripts
+ * @returns {channelId: string | null; name: string}
+ */
 function extractFromScripts(): { channelId: string | null; name: string } {
   const scripts = document.querySelectorAll<HTMLScriptElement>("script");
   let channelId: string | null = null;
@@ -43,6 +47,8 @@ function extractFromScripts(): { channelId: string | null; name: string } {
     }
     if (channelId && name) break;
   }
+
+  logger.debug(`${DEBUG_PREFIX} extractChannelInfo`, { scripts, channelId, name });
 
   return { channelId, name };
 }
@@ -77,6 +83,8 @@ function extractChannelInfo(preferredChannelId?: string): SubscribedChannelInfo 
   const thumbnailUrl =
     document.querySelector<HTMLImageElement>("ytd-video-owner-renderer img, #avatar img")?.src ||
     undefined;
+
+  logger.debug(`${DEBUG_PREFIX} extractChannelInfo`, { preferredChannelId, fromScripts, channelId, name, thumbnailUrl });
 
   return { channelId, name, thumbnailUrl };
 }

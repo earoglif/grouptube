@@ -47,7 +47,8 @@ function SubscribeAssignRoot() {
             name: resolved.name,
             thumbnailUrl: resolved.thumbnailUrl,
           });
-          logger.debug(`${DEBUG_PREFIX} set pending channel`, resolved);
+
+          logger.debug(`${DEBUG_PREFIX} set pending channel`, subscription, resolved);
           setPendingChannel(resolved);
         })
         .catch(() => {
@@ -61,14 +62,17 @@ function SubscribeAssignRoot() {
           setPendingChannel(fallbackInfo);
         });
     });
+
     const stopUnsubscribe = initUnsubscribeWatcher((channelIds) => {
       removeSubscriptions(channelIds);
       requestSubscriptions();
       void assignChannelsToGroup(channelIds, null);
+      
       setPendingChannel((current) =>
         current && channelIds.includes(current.channelId) ? null : current
       );
     });
+
     return () => {
       stopSubscribe();
       stopUnsubscribe();

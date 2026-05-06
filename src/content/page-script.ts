@@ -181,8 +181,69 @@ function parseSubscribeBody(body: unknown): string[] {
   return [];
 }
 
+async function decompressBuffer(buffer: ArrayBuffer, format: "gzip" | "deflate"): Promise<string | null> {
+  if (typeof DecompressionStream === "undefined") return null;
+  try {
+    const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStream(format));
+    return await new Response(stream).text();
+  } catch (error) {
+    logger.debug(`${DEBUG_PREFIX} ${format} decompression failed`, { error });
+    return null;
+  }
+}
+
+async function readRequestBodyText(request: Request): Promise<string> {
+  try {
+    const buffer = await request.arrayBuffer();
+    if (buffer.byteLength === 0) {
+      logger.debug(`${DEBUG_PREFIX} request body is empty`);
+      return "";
+    }
+
+    const bytes = new Uint8Array(buffer);
+    const isGzip = bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+    if (isGzip) {
+      const decompressed = await decompressBuffer(buffer, "gzip");
+      if (decompressed !== null) {
+        logger.debug(`${DEBUG_PREFIX} request body decompressed`, {
+          encoding: "gzip",
+          byteLength: buffer.byteLength,
+          textLength: decompressed.length,
+          preview: decompressed.slice(0, 256),
+        });
+        return decompressed;
+      }
+    }
+
+    const text = new TextDecoder("utf-8").decode(buffer);
+    logger.debug(`${DEBUG_PREFIX} request body read`, {
+      byteLength: buffer.byteLength,
+      textLength: text.length,
+      preview: text.slice(0, 256),
+    });
+    return text;
+  } catch (error) {
+    logger.debug(`${DEBUG_PREFIX} request body read failed`, { error });
+    return "";
+  }
+}
+
+async function readStreamText(stream: ReadableStream<Uint8Array>): Promise<string> {
+  try {
+    const text = await new Response(stream).text();
+    logger.debug(`${DEBUG_PREFIX} stream body read`, {
+      textLength: text.length,
+      preview: text.slice(0, 256),
+    });
+    return text;
+  } catch (error) {
+    logger.debug(`${DEBUG_PREFIX} stream body read failed`, { error });
+    return "";
+  }
+}
+
 async function parseSubscribeBodyFromRequest(
-  input: SubscribeRequestInput,
+  clonedRequest: Request | null,
   init?: SubscribeRequestInit
 ): Promise<string[]> {
   const directBody = init && init.body !== undefined ? init.body : undefined;
@@ -199,19 +260,21 @@ async function parseSubscribeBodyFromRequest(
     }
   }
 
-  if (input && typeof Request !== "undefined" && input instanceof Request) {
-    try {
-      const text = await input.clone().text();
-      const fromText = parseChannelIdsFromRawText(text);
-      if (fromText.length > 0) return fromText;
-    } catch (error) {
-      logger.debug(`${DEBUG_PREFIX} request.clone().text() failed`, { error });
+  if (typeof ReadableStream !== "undefined" && directBody instanceof ReadableStream) {
+    const text = await readStreamText(directBody);
+    if (text.length > 0) {
+      const fromStream = parseChannelIdsFromRawText(text);
+      if (fromStream.length > 0) return fromStream;
     }
   }
 
-  const bodyFromRequest = input && typeof input === "object" && "body" in input ? input.body : undefined;
-  const fromRequestBody = parseSubscribeBody(bodyFromRequest);
-  if (fromRequestBody.length > 0) return fromRequestBody;
+  if (clonedRequest) {
+    const text = await readRequestBodyText(clonedRequest);
+    if (text.length > 0) {
+      const fromText = parseChannelIdsFromRawText(text);
+      if (fromText.length > 0) return fromText;
+    }
+  }
 
   return [];
 }
@@ -224,9 +287,13 @@ function emitSubscriptionEvent(eventName: string, channelIds: string[]): void {
   );
 }
 
+/**
+ * Install subscribe request bridge 
+*/
 function installSubscribeRequestBridge() {
   logger.debug(`${DEBUG_PREFIX} install subscribe bridge`);
   const originalFetch = window.fetch;
+
   if (typeof originalFetch === "function") {
     window.fetch = function patchedFetch(
       this: WindowOrWorkerGlobalScope,
@@ -247,22 +314,36 @@ function installSubscribeRequestBridge() {
           eventName = url.includes(UNSUBSCRIBE_URL_MARKER)
             ? EVENT_SUBSCRIPTION_UNSUBSCRIBE
             : EVENT_SUBSCRIPTION_SUBSCRIBE;
-          logger.debug(`${DEBUG_PREFIX} fetch subscription match`, { url, eventName });
-          channelIdsPromise = parseSubscribeBodyFromRequest(input, init);
+
+          let clonedRequest: Request | null = null;
+          if (typeof Request !== "undefined" && input instanceof Request) {
+            try {
+              clonedRequest = input.clone();
+            } catch (error) {
+              logger.debug(`${DEBUG_PREFIX} request.clone() failed`, { error });
+            }
+          }
+
+          channelIdsPromise = parseSubscribeBodyFromRequest(clonedRequest, init);
+
+          logger.debug(`${DEBUG_PREFIX} fetch subscription match`, {
+            url,
+            eventName,
+            hasClonedRequest: clonedRequest !== null,
+            inputType: input instanceof Request ? "Request" : typeof input,
+            initBodyType: init && init.body !== undefined ? typeof init.body : "undefined",
+          });
 
           if (eventName === EVENT_SUBSCRIPTION_SUBSCRIBE) {
             void channelIdsPromise.then((channelIds) => {
-              const body = init && init.body !== undefined ? init.body : undefined;
-              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
-                channelIds,
-                bodyType: typeof body,
-                inputType: input instanceof Request ? "Request" : typeof input,
-              });
+              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, { channelIds });
               emitSubscriptionEvent(eventName ?? EVENT_SUBSCRIPTION_SUBSCRIBE, channelIds);
             });
           }
         }
-      } catch {}
+      } catch (error) {
+        logger.debug(`${DEBUG_PREFIX} patchedFetch error`, { error });
+      }
 
       const responsePromise = originalFetch.call(this, input, init);
 
@@ -274,12 +355,7 @@ function installSubscribeRequestBridge() {
               return;
             }
             void channelIdsPromise?.then((channelIds) => {
-              const body = init && init.body !== undefined ? init.body : undefined;
-              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, {
-                channelIds,
-                bodyType: typeof body,
-                inputType: input instanceof Request ? "Request" : typeof input,
-              });
+              logger.debug(`${DEBUG_PREFIX} fetch parsed channelIds`, { channelIds });
               emitSubscriptionEvent(EVENT_SUBSCRIPTION_UNSUBSCRIBE, channelIds);
             });
           })
