@@ -119,9 +119,23 @@ export async function deleteGroupAction(groupId: GroupId) {
 }
 
 export async function reorderGroupsAction(groupIds: GroupId[]) {
-  const nextGroups = await reorderGroups(snapshot.userId, groupIds);
-  setGroups(nextGroups);
-  return nextGroups;
+  const previousGroups = snapshot.groups;
+  const orderMap = new Map(previousGroups.map((group) => [group.id, group]));
+  const orderedGroups = groupIds
+    .map((groupId) => orderMap.get(groupId))
+    .filter((group): group is IGroup => Boolean(group));
+  const remainingGroups = previousGroups.filter((group) => !groupIds.includes(group.id));
+  const optimisticGroups = [...orderedGroups, ...remainingGroups];
+  setGroups(optimisticGroups);
+
+  try {
+    const nextGroups = await reorderGroups(snapshot.userId, groupIds);
+    setGroups(nextGroups);
+    return nextGroups;
+  } catch (error) {
+    setGroups(previousGroups);
+    throw error;
+  }
 }
 
 export async function assignChannelToGroupAction(channelId: ChannelId, groupId: GroupId | null) {
