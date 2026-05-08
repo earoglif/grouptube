@@ -13,7 +13,7 @@ GroupTube is a Chrome extension for organizing YouTube subscriptions into custom
 - Opens an assignment dialog after subscribing to a channel.
 - Removes unsubscribed channels from local subscription/group state.
 - Imports and exports group backups as JSON.
-- Generates an LLM prompt for reorganizing subscriptions into groups.
+- Generates an AI chat prompt for reorganizing subscriptions into groups.
 - Stores data per YouTube user when a user id is available, with an anonymous fallback.
 - Supports English and Russian UI strings.
 
